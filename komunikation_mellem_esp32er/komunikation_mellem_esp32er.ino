@@ -3,9 +3,9 @@
 #include <esp_wifi.h>
 #include <string.h>
 struct Sensordata {
-  float temp;
-  float hum;
-  float pres;
+  float temp = 200;
+  float hum = 2000;
+  float pres = 24000;
 };
 // Create a struct to hold sensor readings
 Sensordata outgoingStruct;
@@ -14,7 +14,7 @@ Sensordata outgoingStruct;
 String success;
 
 //adress of the mainESP32 in sending data to
-uint8_t broadcastAddress[] = { 0x08, 0x3a, 0xf2, 0x45, 0x3f, 0x51 };
+uint8_t broadcastAddress[] = { 0x08, 0x3a, 0xf2, 0x45, 0x3f, 0x50 };
 
 
 
@@ -38,6 +38,7 @@ uint8_t* readMacAddress() {
   }
 }
 */
+esp_now_peer_info_t peerInfo;
 
 //parameter automatically get fillede when callback funktion is called.
 void OnDataSent(const uint8_t* mac_addr, esp_now_send_status_t status) {
@@ -52,8 +53,9 @@ void OnDataSent(const uint8_t* mac_addr, esp_now_send_status_t status) {
 
 void setup() {
   Serial.begin(115200);
+  WiFi.mode(WIFI_STA);
 
-/*
+  /*
   //initialises what kinda wifi mode its in, rn its in accese point mode, so i dont have to connect to uni wifi with own student password.
   WiFi.mode(WIFI_AP);
   WiFi.AP.begin();
@@ -82,19 +84,39 @@ void setup() {
   esp_now_register_send_cb(esp_now_send_cb_t(OnDataSent));
 
   // Register peer
-  esp_now_peer_info_t peerInfo;
   memcpy(peerInfo.peer_addr, broadcastAddress, 6);
   peerInfo.channel = 0;
   peerInfo.encrypt = false;
 
-  // Add peer
-  if (esp_now_add_peer(&peerInfo) != ESP_OK) {
-    Serial.println("Failed to add peer");
-    return;
+  Serial.print("Peer MAC: ");
+  for (int i = 0; i < 6; i++) {
+    if (peerInfo.peer_addr[i] < 16) Serial.print("0");  // zero pad
+    Serial.print(peerInfo.peer_addr[i], HEX);
+    if (i < 5) Serial.print(":");
   }
+  Serial.println();
 
+  if (esp_now_add_peer(&peerInfo) == ESP_OK) {
+    Serial.println("Peer added successfully");
+  } else {
+    Serial.print("Failed to add peer Error code: ");
+    Serial.println(esp_now_add_peer(&peerInfo));
+  }
 }
 
 
+
 void loop() {
+
+   // Send message via ESP-NOW
+  esp_err_t result = esp_now_send(broadcastAddress, (uint8_t *) &outgoingStruct, sizeof(outgoingStruct));
+
+  if (result == ESP_OK) {
+    Serial.println("Sent with success");
+  }
+  else {
+    Serial.println("Error sending the data");
+  }
+  
+   
 }
