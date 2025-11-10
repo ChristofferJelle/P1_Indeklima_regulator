@@ -26,6 +26,7 @@ then returns if it succesded or not in getting the mac
 
 then with printf i specify it the format it needs to spit out the mac address in. %02x = print as hexidecimal number, that needs to be at least 2 digits wide.
 */
+
 uint8_t* readMacAddress() {
   static uint8_t baseMac[6];
   esp_err_t ret = esp_wifi_get_mac(WIFI_IF_AP, baseMac);
