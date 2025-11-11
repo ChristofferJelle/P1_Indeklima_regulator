@@ -11,13 +11,13 @@ struct Sensordata {
   float temp;
   float hum;
   float co2;
+  //int id;
 };
 // Create a struct to hold sensor readings
 Sensordata IngoingStruct;
 
-int refreshTimer = 1000;
+int refreshTimer = 10000;
 int timerReset = refreshTimer + millis();
-
 
 uint8_t* readMacAddress() {
   static uint8_t baseMac[6];

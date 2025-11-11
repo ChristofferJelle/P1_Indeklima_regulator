@@ -3,6 +3,8 @@
 #include <esp_wifi.h>
 #include <string.h>
 
+//make float array with all data in it, maybe #define temp array[3] = temp
+
 struct Sensordata {
   float temp = 200;
   float hum = 2000;
