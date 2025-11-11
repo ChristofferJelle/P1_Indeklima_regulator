@@ -13,6 +13,7 @@ struct Sensordata {
   float co2;
   //int id;
 };
+
 // Create a struct to hold sensor readings
 Sensordata IngoingStruct;
 
