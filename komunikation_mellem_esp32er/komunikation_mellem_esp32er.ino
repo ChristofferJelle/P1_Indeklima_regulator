@@ -11,9 +11,6 @@ struct Sensordata {
 // Create a struct to hold sensor readings
 Sensordata outgoingStruct;
 
-// Variable to store if sending data was successful
-String success;
-
 //adress of the mainESP32 in sending data to
 uint8_t broadcastAddress[] = { 0x08, 0x3a, 0xf2, 0x45, 0x3f, 0x50 };
 
@@ -27,18 +24,6 @@ then returns if it succesded or not in getting the mac
 
 then with printf i specify it the format it needs to spit out the mac address in. %02x = print as hexidecimal number, that needs to be at least 2 digits wide.
 */
-
-uint8_t* readMacAddress() {
-  static uint8_t baseMac[6];
-  esp_err_t ret = esp_wifi_get_mac(WIFI_IF_AP, baseMac);
-  if (ret == ESP_OK) {
-    return baseMac;
-  } else {
-    Serial.println("Failed to read MAC address");
-    return nullptr;
-  }
-}
-
 esp_now_peer_info_t peerInfo;
 
 //parameter automatically get fillede when callback funktion is called.
@@ -49,7 +34,7 @@ void OnDataSent(const uint8_t* mac_addr, esp_now_send_status_t status) {
     if (i < 5) Serial.print(":");
   }
   Serial.print(" -> ");
-  Serial.println(status == ESP_NOW_SEND_SUCCESS ? "Success" : "Failed");
+  Serial.println(ESP_NOW_SEND_SUCCESS ? "Success" : "Failed");
 }
 
 void setup() {
@@ -58,23 +43,7 @@ void setup() {
 
   
   //initialises what kinda wifi mode its in, rn its in STA mode, so i dont have to connect to uni wifi with own student password.
-/*
-  WiFi.AP.begin();
-  //har
-  Serial.print("[DEFAULT] ESP32 Board MAC Address: ");
-  uint8_t* ownMac = readMacAddress();
-  //converts array into a string.
-  if (ownMac != nullptr) {
-    String ownMacHex;
-    for (int i = 0; i < 6; i++) {
-      String hexPart = String(ownMac[i], HEX);
-      if (hexPart.length() < 2) hexPart = "0" + hexPart;  // zero-pad if needed
-      ownMacHex += hexPart;
-      if (i < 5) ownMacHex += ":";  // add ':' except after last byte
-    }
-    Serial.print(ownMacHex);
-  }
-    */
+
 
   //initatite ESP_now for comunication without router.
   if (esp_now_init() != ESP_OK) {

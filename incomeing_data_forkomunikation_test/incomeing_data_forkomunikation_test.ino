@@ -15,11 +15,6 @@ struct Sensordata {
 // Create a struct to hold sensor readings
 Sensordata IngoingStruct;
 
-// Define variables to store incoming readings
-float incomingTemp;
-float incomingHum;
-float incomingCo2;
-
 int refreshTimer = 1000;
 int timerReset = refreshTimer + millis();
 
@@ -40,9 +35,6 @@ void OnDataRecv(const uint8_t* mac, const uint8_t* incomingData, int len) {
   memcpy(&IngoingStruct, incomingData, sizeof(IngoingStruct));
   //Serial.print("Bytes received: ");
   //Serial.println(len);
-  incomingTemp = IngoingStruct.temp;
-  incomingHum = IngoingStruct.hum;
-  incomingCo2 = IngoingStruct.co2;
 }
 
 void setup() {
@@ -85,9 +77,7 @@ void setup() {
 }
 
 void loop() {
-  /**/
-  int timerCounter = millis();
-  if (timerCounter >= timerReset) {
+  if (millis() >= timerReset) {
     tft.fillScreen(TFT_BLACK);
     tft.setCursor(0, 0);
     tft.setTextSize(2);
@@ -95,38 +85,31 @@ void loop() {
 
     tft.setCursor(0, 30);
     tft.print("Temp: ");
-    tft.print(incomingTemp, 1);  // 1 decimal place
+    tft.print(IngoingStruct.temp, 1);  // 1 decimal place
     tft.println(" C");
 
     tft.setCursor(0, 60);
     tft.print("Hum: ");
-    tft.print(incomingHum, 1);
+    tft.print(IngoingStruct.hum, 1);
     tft.println(" %");
 
     tft.setCursor(0, 90);
     tft.print("co2: ");
-    tft.print(incomingCo2, 1);
-    tft.println(" hPa");
+    tft.print(IngoingStruct.co2, 1);
+    tft.println(" ppm");
 
-    /*
-   tft.setCursor(0, 130);
-    tft.print("Status: ");
-    tft.println(success);
-    */
     // Serial output remains the same
     Serial.println("INCOMING READINGS");
     Serial.print("Temperature: ");
-    Serial.print(incomingTemp);
+    Serial.print(IngoingStruct.temp);
     Serial.println(" ºC");
     Serial.print("Humidity: ");
-    Serial.print(incomingHum);
+    Serial.print(IngoingStruct.hum);
     Serial.println(" %");
     Serial.print("Pressure: ");
-    Serial.print(incomingPres);
-    Serial.println(" hPa");
+    Serial.print(IngoingStruct.co2);
+    Serial.println(" ppm");
     Serial.println();
     timerReset += refreshTimer;
-  } else {
-    ++timerCounter;
   }
 }
