@@ -10,7 +10,7 @@ TFT_eSPI tft = TFT_eSPI();  // Create TFT object
 struct Sensordata {
   float temp;
   float hum;
-  float pres;
+  float co2;
 };
 // Create a struct to hold sensor readings
 Sensordata IngoingStruct;
@@ -18,7 +18,7 @@ Sensordata IngoingStruct;
 // Define variables to store incoming readings
 float incomingTemp;
 float incomingHum;
-float incomingPres;
+float incomingCo2;
 
 int refreshTimer = 1000;
 int timerReset = refreshTimer + millis();
@@ -42,7 +42,7 @@ void OnDataRecv(const uint8_t* mac, const uint8_t* incomingData, int len) {
   //Serial.println(len);
   incomingTemp = IngoingStruct.temp;
   incomingHum = IngoingStruct.hum;
-  incomingPres = IngoingStruct.pres;
+  incomingCo2 = IngoingStruct.co2;
 }
 
 void setup() {
@@ -104,8 +104,8 @@ void loop() {
     tft.println(" %");
 
     tft.setCursor(0, 90);
-    tft.print("Pres: ");
-    tft.print(incomingPres, 1);
+    tft.print("co2: ");
+    tft.print(incomingCo2, 1);
     tft.println(" hPa");
 
     /*

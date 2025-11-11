@@ -2,10 +2,11 @@
 #include <WiFi.h>
 #include <esp_wifi.h>
 #include <string.h>
+
 struct Sensordata {
   float temp = 200;
   float hum = 2000;
-  float pres = 24000;
+  float co2 = 24000;
 };
 // Create a struct to hold sensor readings
 Sensordata outgoingStruct;
@@ -25,7 +26,7 @@ and store mac of the interface ifx in an array.
 then returns if it succesded or not in getting the mac
 
 then with printf i specify it the format it needs to spit out the mac address in. %02x = print as hexidecimal number, that needs to be at least 2 digits wide.
-
+*/
 
 uint8_t* readMacAddress() {
   static uint8_t baseMac[6];
@@ -37,7 +38,7 @@ uint8_t* readMacAddress() {
     return nullptr;
   }
 }
-*/
+
 esp_now_peer_info_t peerInfo;
 
 //parameter automatically get fillede when callback funktion is called.
@@ -55,9 +56,9 @@ void setup() {
   Serial.begin(115200);
   WiFi.mode(WIFI_STA);
 
-  /*
-  //initialises what kinda wifi mode its in, rn its in accese point mode, so i dont have to connect to uni wifi with own student password.
-  WiFi.mode(WIFI_AP);
+  
+  //initialises what kinda wifi mode its in, rn its in STA mode, so i dont have to connect to uni wifi with own student password.
+/*
   WiFi.AP.begin();
   //har
   Serial.print("[DEFAULT] ESP32 Board MAC Address: ");
@@ -89,12 +90,15 @@ void setup() {
   peerInfo.encrypt = false;
 
   Serial.print("Peer MAC: ");
+/*
   for (int i = 0; i < 6; i++) {
     if (peerInfo.peer_addr[i] < 16) Serial.print("0");  // zero pad
     Serial.print(peerInfo.peer_addr[i], HEX);
     if (i < 5) Serial.print(":");
   }
+
   Serial.println();
+*/
 
   if (esp_now_add_peer(&peerInfo) == ESP_OK) {
     Serial.println("Peer added successfully");
@@ -102,6 +106,7 @@ void setup() {
     Serial.print("Failed to add peer Error code: ");
     Serial.println(esp_now_add_peer(&peerInfo));
   }
+  
 }
 
 
