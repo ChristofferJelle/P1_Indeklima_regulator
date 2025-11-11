@@ -27,29 +27,26 @@ void setup() {
 
   prevButtonSate = digitalRead(SW);
   Serial.println(prevButtonSate);
-  // Setup Serial Monitor
-
 
   // Read the initial state of CLK
   lastStateCLK = digitalRead(CLK);
 }
 
 void UpdateSensorData(bool direction) {
-
   switch (s1.CurrentSensorData) {
     case 'T':
       s1.Temp += direction ? -1 : 1;
-      Serial.println("Temp");
+      Serial.print("Temp: ");
       Serial.println(s1.Temp);
       break;
     case 'H':
       s1.Humid += direction ? -1 : 1;
-      Serial.println("Humid");
+      Serial.print("Humidity: ");
       Serial.println(s1.Humid);
       break;
     case 'C':
       s1.CO2 += direction ? -1 : 1;
-      Serial.println("CO2");
+      Serial.print("CO2: ");
       Serial.println(s1.CO2);
       break;
   }
@@ -71,7 +68,6 @@ void loop() {
       case 1:
         s1.CurrentSensorData = 'H';
         Serial.println("set to change limit value of Humid");
-
         break;
       case 2:
         s1.CurrentSensorData = 'C';
