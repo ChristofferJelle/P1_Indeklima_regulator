@@ -3,7 +3,7 @@
 const int servoPin = 9;
 Servo servo; //create servo object
 
-void setup () {
+void setup() {
   servo.attach(servoPin);
 }
 
