@@ -9,6 +9,7 @@ struct Sensordata {
   float temp = 200;
   float hum = 2000;
   float co2 = 24000;
+  //int id = 1;
 };
 // Create a struct to hold sensor readings
 Sensordata outgoingStruct;
@@ -60,8 +61,8 @@ void setup() {
   peerInfo.channel = 0;
   peerInfo.encrypt = false;
 
-  Serial.print("Peer MAC: ");
 /*
+  Serial.print("Peer MAC: ");
   for (int i = 0; i < 6; i++) {
     if (peerInfo.peer_addr[i] < 16) Serial.print("0");  // zero pad
     Serial.print(peerInfo.peer_addr[i], HEX);
