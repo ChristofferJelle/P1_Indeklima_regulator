@@ -20,33 +20,9 @@ esp_now_peer_info_t peerInfo;
 
 void setup() {
   Serial.begin(115200);
-  WiFi.mode(WIFI_STA);
 
-  //initatite ESP_now for comunication without router.
-  if (esp_now_init() != ESP_OK) {
-    Serial.println("Error initializing ESP-NOW");
-    return;
-  }
-
-  //Register that i want to send to cb. basically says "everytime i send data u just need to run this too"
-  //esp_now_register_send_cb(esp_now_send_cb_t(OnDataSent));
-
-  // Register peer
-  for (int i = 0; i < 6; i++) {
-    peerInfo.peer_addr[i] = broadcastAddress[i];
-  }
-  peerInfo.channel = 0;
-  peerInfo.encrypt = false;
-
-  Serial.println("Peer MAC:");
-  AddressOfPeer(broadcastAddress);
-
-  if (esp_now_add_peer(&peerInfo) == ESP_OK) {
-    Serial.println("Peer added successfully");
-  } else {
-    Serial.print("Failed to add peer Error code: ");
-    Serial.println(esp_now_add_peer(&peerInfo));
-  }
+  InitESP32_NOW();
+  registerPeers();
 }
 
 void loop() {
