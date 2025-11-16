@@ -23,28 +23,33 @@ void InitESP32_NOW() {
 // Callback when data is received
 void OnDataRecv(const uint8_t* mac, const uint8_t* incomingData, int len) {
   memcpy(&TempIngoingStruct, incomingData, sizeof(TempIngoingStruct));
-
   // The condition reads: "If the first 6 bytes of peerInfo are NOT equal to the first 6 bytes of IngoingStruct.id"
-  if (CheckArrayList(TempIngoingStruct) == true) {
+  if (CheckArrayList(TempIngoingStruct) >= 0) {
     //Serial.println("Peer already registered");
-    memcpy(&IngoingStruct, incomingData, sizeof(IngoingStruct));
 
-    
+    for (int i = 0; i < 10; i++) {
+      int IDIndexMatch = CheckArrayList(TempIngoingStruct);
+      if (IDIndexMatch >= 0) {
+        memcpy(&Peers[IDIndexMatch].IngoingStruct, incomingData, sizeof(Peers[IDIndexMatch].IngoingStruct));
+        break;
+      }
+    }
+
     //Serial.print("Bytes received: ");
     //Serial.println(len);
   } else {
+    Serial.println("who tf are you, get in here");
+    registerPeers(TempIngoingStruct);
   }
 }
 // funktion to check arraylist if any of its arrays contain the incomeing macaddress
-bool CheckArrayList(struct Sensordata MacToCheck) {
+int CheckArrayList(struct Sensordata MacToCheck) {
   for (int i = 0; i < 10; i++) {
-    if (memcmp(MacToCheck.id, peerInfo[i].peer_addr, sizeof(peerInfo[i].peer_addr)) == 0) {
-      return true;
+    if (memcmp(MacToCheck.id, Peers[i].peerInfo.peer_addr, sizeof(Peers[i].peerInfo.peer_addr)) == 0) {
+      return i;
     }
   }
-  Serial.println("who tf are you, get in here");
-  registerPeers(TempIngoingStruct);
-  return false;
+  return -1;
 }
 
 uint8_t* readMacAddress() {
@@ -63,29 +68,30 @@ void registerPeers(struct Sensordata MacToAdd) {
   uint8_t EMPTY_MAC_ADDRESS[] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
   // Register peer
   for (int j = 0; j < 10; j++) {
-    if (memcmp(&peerInfo[j].peer_addr, EMPTY_MAC_ADDRESS, sizeof(peerInfo[j].peer_addr)) == 0) {
+    if (memcmp(&Peers[j].peerInfo.peer_addr, EMPTY_MAC_ADDRESS, sizeof(Peers[j].peerInfo.peer_addr)) == 0) {
       tempIndex = j;
       break;
     } else {
       continue;
     }
   }
-  memcpy(&peerInfo[tempIndex].peer_addr, MacToAdd.id, sizeof(peerInfo[tempIndex].peer_addr));
+  memcpy(&Peers[tempIndex].peerInfo.peer_addr, MacToAdd.id, sizeof(Peers[tempIndex].peerInfo.peer_addr));
 
 
-  peerInfo[tempIndex].channel = 0;
-  peerInfo[tempIndex].encrypt = false;
+  Peers[tempIndex].peerInfo.channel = 0;
+  Peers[tempIndex].peerInfo.encrypt = false;
 
   Serial.println("Peer MAC:");
-  AddressOfPeer(peerInfo[tempIndex].peer_addr);
+  AddressOfPeer(Peers[tempIndex].peerInfo.peer_addr);
 
-  if (esp_now_add_peer(&peerInfo[tempIndex]) == ESP_OK) {
+  if (esp_now_add_peer(&Peers[tempIndex].peerInfo) == ESP_OK) {
     Serial.println("Peer added successfully");
-    CommandStruct.command = 'C';  //command for connection confirmed
-    esp_now_send(peerInfo[tempIndex].peer_addr, (uint8_t*)&CommandStruct, sizeof(CommandStruct));
+    Peers[tempIndex].isActive = true;
+    TempIngoingStruct.command = 'C';  //command for connection confirmed
+    esp_now_send(Peers[tempIndex].peerInfo.peer_addr, (uint8_t*)&TempIngoingStruct, sizeof(TempIngoingStruct));
   } else {
     Serial.print("Failed to add peer Error code: ");
-    Serial.println(esp_now_add_peer(&peerInfo[tempIndex]));
+    Serial.println(esp_now_add_peer(&Peers[tempIndex].peerInfo));
   }
 }
 
@@ -105,42 +111,110 @@ void DrawDisplay() {
 
   tft.setCursor(0, 30);
   tft.print("Temp: ");
-  tft.print(IngoingStruct.temp, 1);  // 1 decimal place
+  tft.print(AveragesStruct.temp, 1);  // 1 decimal place
   tft.println(" C");
 
   tft.setCursor(0, 60);
   tft.print("Hum: ");
-  tft.print(IngoingStruct.hum, 1);
+  tft.print(AveragesStruct.hum, 1);
   tft.println(" %");
 
   tft.setCursor(0, 90);
-  tft.print("co2: ");
-  tft.print(IngoingStruct.co2, 1);
+  tft.print("CO2: ");
+  tft.print(AveragesStruct.co2, 1);
   tft.println(" ppm");
+
+  tft.setCursor(0, 120);
+  tft.print("Connected Peers: ");
+  tft.print(AveragesStruct.activePeersTotal, 1);
 
   // Serial output remains the same
   Serial.println("INCOMING READINGS");
   Serial.print("Temperature: ");
-  Serial.print(IngoingStruct.temp);
+  Serial.print(AveragesStruct.temp);
   Serial.println(" ºC");
   Serial.print("Humidity: ");
-  Serial.print(IngoingStruct.hum);
+  Serial.print(AveragesStruct.hum);
   Serial.println(" %");
   Serial.print("Pressure: ");
-  Serial.print(IngoingStruct.co2);
+  Serial.print(AveragesStruct.co2);
   Serial.println(" ppm");
   Serial.println();
+
+  /*
   for (int i = 0; i < 6; i++) {
-    if (IngoingStruct.id[i] < 16) { Serial.print("0"); }  // zero pad
-    Serial.print(IngoingStruct.id[i], HEX);
+    if (TempIngoingStruct.id[i] < 16) { Serial.print("0"); }  // zero pad
+    Serial.print(TempIngoingStruct.id[i], HEX);
     if (i < 5) { Serial.print(":"); }
   }
   Serial.println();
+  */
 }
 
 void SendCommandAllSlaves(char command) {
-  CommandStruct.command = command;  //command for sending the data confirmed
+  TempIngoingStruct.ping = '1';
+  TempIngoingStruct.command = command;  //command for sending the data confirmed
+
   for (int i = 0; i < 10; i++) {
-    esp_now_send(peerInfo[i].peer_addr, (uint8_t*)&CommandStruct, sizeof(CommandStruct));
+    esp_now_send(Peers[i].peerInfo.peer_addr, (uint8_t*)&TempIngoingStruct, sizeof(TempIngoingStruct));
   }
 }
+
+void CalculateAvrg(Sensordata* resultStruct) {
+  uint8_t EMPTY_MAC_ADDRESS[] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+  resultStruct->temp = 0;
+  resultStruct->hum = 0;
+  resultStruct->co2 = 0;
+  resultStruct->activePeersTotal = 0;
+  int activePeersTotal = 0;
+
+  for (int i = 0; i < 10; i++) {
+    if (Peers[i].isActive == true) {
+      resultStruct->temp += Peers[i].IngoingStruct.temp;
+      resultStruct->hum += Peers[i].IngoingStruct.hum;
+      resultStruct->co2 += Peers[i].IngoingStruct.co2;
+      activePeersTotal++;
+
+      esp_now_del_peer(Peers[i].peerInfo.peer_addr);
+      /*
+      if (Peers[i].IngoingStruct.ping != '2') {
+        TempIngoingStruct.command = 'R';
+        esp_err_t sendErr = esp_now_send(Peers[i].peerInfo.peer_addr, (uint8_t*)&TempIngoingStruct, sizeof(TempIngoingStruct));
+
+        if (sendErr != ESP_OK) {
+          Serial.println("Warning: Failed to send reset command to unresponsive peer.");
+        }
+
+        esp_err_t delErr = esp_now_del_peer(Peers[i].peerInfo.peer_addr);
+
+        if (delErr == ESP_OK) {
+          Serial.println("Successfully removed peer from internal ESP-NOW list.");
+        }
+
+        memcpy(&Peers[i].peerInfo.peer_addr, EMPTY_MAC_ADDRESS, sizeof(EMPTY_MAC_ADDRESS));
+
+
+        Serial.println("Removed the peer: ");
+        String ownMacHex;
+        for (int j = 0; j < 6; j++) {
+          String hexPart = String(Peers[i].peerInfo.peer_addr[j], HEX);
+          if (hexPart.length() < 2) hexPart = "0" + hexPart;  // zero-pad if needed
+          ownMacHex += hexPart;
+          if (i < 5) ownMacHex += ":";  // add ':' except after last byte
+        }
+        Serial.println(ownMacHex);
+        Serial.println();
+
+
+        Peers[i].isActive = false;
+        activePeersTotal--;
+      } */
+    }
+        
+    }
+    resultStruct->temp /= activePeersTotal;
+    resultStruct->hum /= activePeersTotal;
+    resultStruct->co2 /= activePeersTotal;
+    resultStruct->activePeersTotal = activePeersTotal;
+    Serial.println(activePeersTotal);
+  }

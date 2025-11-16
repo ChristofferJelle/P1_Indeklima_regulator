@@ -5,11 +5,13 @@
 //make float array with all data in it, maybe #define temp array[3] = temp
 
 struct Sensordata {
-  float temp = 200;
-  float hum = 2000;
+  float temp = 120;
+  float hum = 20000;
   float co2 = 24000;
   uint8_t id[6];
   char command;
+  int activePeersTotal;
+  char ping;
 };
 // Create a struct to hold sensor readings
 Sensordata outgoingStruct, CommandStruct;

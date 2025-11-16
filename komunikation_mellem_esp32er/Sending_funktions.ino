@@ -30,16 +30,18 @@ void InitESP32_NOW() {
 
 // Callback when data is received
 void OnDataRecv(const uint8_t* mac, const uint8_t* incomingData, int len) {
-  memcpy(&CommandStruct, incomingData, sizeof(CommandStruct));
+  memcpy(&outgoingStruct, incomingData, sizeof(outgoingStruct));
   Serial.println(CommandStruct.command);
   switch (CommandStruct.command) {
     case 'C':
       ConnectedToMaster = true;
       break;
     case 'S':
+      outgoingStruct.ping = '2';
       SendDataToMaster();
       break;
     case 'R':
+      ConnectedToMaster = false;
       ESP.restart();
       break;
     default:
@@ -50,6 +52,7 @@ void SendDataToMaster() {
   // Send message via ESP-NOW
   esp_err_t result = esp_now_send(broadcastAddress, (uint8_t*)&outgoingStruct, sizeof(outgoingStruct));
 
+  /*
   if (result == ESP_OK) {
     Serial.print("Sent with success to ");
     AddressOfPeer(broadcastAddress);
@@ -60,6 +63,7 @@ void SendDataToMaster() {
     AddressOfPeer(broadcastAddress);
     Serial.println();
   }
+  */
 }
 
 

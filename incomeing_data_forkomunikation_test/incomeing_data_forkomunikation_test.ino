@@ -9,7 +9,7 @@
 
 TFT_eSPI tft = TFT_eSPI();  // Create TFT object
 
-esp_now_peer_info_t peerInfo[10];
+
 
 struct Sensordata {
   float temp;
@@ -17,10 +17,20 @@ struct Sensordata {
   float co2;
   uint8_t id[6];
   char command;
+  int activePeersTotal;
+  char ping;
 };
-
 // Create a struct to hold sensor readings
-Sensordata IngoingStruct, TempIngoingStruct, CommandStruct;
+Sensordata TempIngoingStruct, AveragesStruct;
+
+struct PeerDataContext {
+  esp_now_peer_info_t peerInfo;
+  Sensordata IngoingStruct;
+  bool isActive;  // Flag to track active peers
+};
+PeerDataContext Peers[10];
+
+
 
 int refreshTimer = 10000;
 int timerReset = refreshTimer + millis();
@@ -60,7 +70,11 @@ void loop() {
   }
 
   if (millis() >= timerReset) {
+
     SendCommandAllSlaves('S');
+    CalculateAvrg(&AveragesStruct);
+
+
 
     DrawDisplay();
     timerReset += refreshTimer;
