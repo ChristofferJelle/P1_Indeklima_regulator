@@ -24,7 +24,44 @@ void InitESP32_NOW() {
 
   //Register that i want to send to cb. basically says "everytime i send data u just need to run this too"
   //esp_now_register_send_cb(esp_now_send_cb_t(OnDataSent));
+  //Register that i want to recive to cb. basically says "everytime i send data u just need to run this too"
+  esp_now_register_recv_cb(esp_now_recv_cb_t(OnDataRecv));
 }
+
+// Callback when data is received
+void OnDataRecv(const uint8_t* mac, const uint8_t* incomingData, int len) {
+  memcpy(&CommandStruct, incomingData, sizeof(CommandStruct));
+  Serial.println(CommandStruct.command);
+  switch (CommandStruct.command) {
+    case 'C':
+      ConnectedToMaster = true;
+      break;
+    case 'S':
+      SendDataToMaster();
+      break;
+    case 'R':
+      ESP.restart();
+      break;
+    default:
+      break;
+  }
+}
+void SendDataToMaster() {
+  // Send message via ESP-NOW
+  esp_err_t result = esp_now_send(broadcastAddress, (uint8_t*)&outgoingStruct, sizeof(outgoingStruct));
+
+  if (result == ESP_OK) {
+    Serial.print("Sent with success to ");
+    AddressOfPeer(broadcastAddress);
+    Serial.println();
+  } else {
+    Serial.print("Error sending the data to ");
+
+    AddressOfPeer(broadcastAddress);
+    Serial.println();
+  }
+}
+
 
 void registerPeers() {
 

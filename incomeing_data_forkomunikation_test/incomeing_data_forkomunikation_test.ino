@@ -5,22 +5,31 @@
 #include <TFT_eSPI.h>  // LILYGO T-Display library
 #include <SPI.h>
 
+#define BUTTON_PIN 35
+
 TFT_eSPI tft = TFT_eSPI();  // Create TFT object
+
+esp_now_peer_info_t peerInfo[10];
 
 struct Sensordata {
   float temp;
   float hum;
   float co2;
-  //int id;
+  uint8_t id[6];
+  char command;
 };
+
 // Create a struct to hold sensor readings
-Sensordata IngoingStruct;
+Sensordata IngoingStruct, TempIngoingStruct, CommandStruct;
 
 int refreshTimer = 10000;
 int timerReset = refreshTimer + millis();
 
 void setup() {
   Serial.begin(115200);
+  pinMode(BUTTON_PIN, INPUT);
+
+  Serial.println();
 
   InitDisplay();
 
@@ -40,45 +49,20 @@ void setup() {
     }
     Serial.println(ownMacHex);
   }
-
-  // Register peers
-  
 }
 
 void loop() {
+  int buttonState = digitalRead(BUTTON_PIN);
+  if (buttonState == LOW) {
+    Serial.println("Button pressed!");
+    SendCommandAllSlaves('R');
+    ESP.restart();
+  }
+
   if (millis() >= timerReset) {
-    tft.fillScreen(TFT_BLACK);
-    tft.setCursor(0, 0);
-    tft.setTextSize(2);
-    tft.println("INCOMING READINGS");
+    SendCommandAllSlaves('S');
 
-    tft.setCursor(0, 30);
-    tft.print("Temp: ");
-    tft.print(IngoingStruct.temp, 1);  // 1 decimal place
-    tft.println(" C");
-
-    tft.setCursor(0, 60);
-    tft.print("Hum: ");
-    tft.print(IngoingStruct.hum, 1);
-    tft.println(" %");
-
-    tft.setCursor(0, 90);
-    tft.print("co2: ");
-    tft.print(IngoingStruct.co2, 1);
-    tft.println(" ppm");
-
-    // Serial output remains the same
-    Serial.println("INCOMING READINGS");
-    Serial.print("Temperature: ");
-    Serial.print(IngoingStruct.temp);
-    Serial.println(" ºC");
-    Serial.print("Humidity: ");
-    Serial.print(IngoingStruct.hum);
-    Serial.println(" %");
-    Serial.print("Pressure: ");
-    Serial.print(IngoingStruct.co2);
-    Serial.println(" ppm");
-    Serial.println();
+    DrawDisplay();
     timerReset += refreshTimer;
   }
 }
