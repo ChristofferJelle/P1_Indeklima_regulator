@@ -18,15 +18,15 @@ struct Sensordata {
   uint8_t id[6];
   char command;
   int activePeersTotal;
-  char ping;
 };
 // Create a struct to hold sensor readings
-Sensordata TempIngoingStruct, AveragesStruct;
+Sensordata TempIngoingStruct, CommandStruct, AveragesStruct;
 
 struct PeerDataContext {
   esp_now_peer_info_t peerInfo;
   Sensordata IngoingStruct;
-  bool isActive;  // Flag to track active peers
+  bool isActive;               // Flag to track active peers
+  unsigned long lastSeenTime;  // <--- Add this
 };
 PeerDataContext Peers[10];
 
@@ -70,7 +70,7 @@ void loop() {
   }
 
   if (millis() >= timerReset) {
-
+    PruneUnresponsivePeers();
     SendCommandAllSlaves('S');
     CalculateAvrg(&AveragesStruct);
 

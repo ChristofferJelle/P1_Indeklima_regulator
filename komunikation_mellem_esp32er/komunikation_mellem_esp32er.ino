@@ -11,7 +11,6 @@ struct Sensordata {
   uint8_t id[6];
   char command;
   int activePeersTotal;
-  char ping;
 };
 // Create a struct to hold sensor readings
 Sensordata outgoingStruct, CommandStruct;

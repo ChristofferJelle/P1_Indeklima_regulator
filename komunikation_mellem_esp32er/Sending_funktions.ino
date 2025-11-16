@@ -30,14 +30,13 @@ void InitESP32_NOW() {
 
 // Callback when data is received
 void OnDataRecv(const uint8_t* mac, const uint8_t* incomingData, int len) {
-  memcpy(&outgoingStruct, incomingData, sizeof(outgoingStruct));
+  memcpy(&CommandStruct, incomingData, sizeof(CommandStruct));
   Serial.println(CommandStruct.command);
   switch (CommandStruct.command) {
     case 'C':
       ConnectedToMaster = true;
       break;
     case 'S':
-      outgoingStruct.ping = '2';
       SendDataToMaster();
       break;
     case 'R':

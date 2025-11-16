@@ -31,6 +31,8 @@ void OnDataRecv(const uint8_t* mac, const uint8_t* incomingData, int len) {
       int IDIndexMatch = CheckArrayList(TempIngoingStruct);
       if (IDIndexMatch >= 0) {
         memcpy(&Peers[IDIndexMatch].IngoingStruct, incomingData, sizeof(Peers[IDIndexMatch].IngoingStruct));
+        // Update peer last seen time
+        Peers[IDIndexMatch].lastSeenTime = millis();
         break;
       }
     }
@@ -87,8 +89,8 @@ void registerPeers(struct Sensordata MacToAdd) {
   if (esp_now_add_peer(&Peers[tempIndex].peerInfo) == ESP_OK) {
     Serial.println("Peer added successfully");
     Peers[tempIndex].isActive = true;
-    TempIngoingStruct.command = 'C';  //command for connection confirmed
-    esp_now_send(Peers[tempIndex].peerInfo.peer_addr, (uint8_t*)&TempIngoingStruct, sizeof(TempIngoingStruct));
+    CommandStruct.command = 'C';  //command for connection confirmed
+    esp_now_send(Peers[tempIndex].peerInfo.peer_addr, (uint8_t*)&CommandStruct, sizeof(CommandStruct));
   } else {
     Serial.print("Failed to add peer Error code: ");
     Serial.println(esp_now_add_peer(&Peers[tempIndex].peerInfo));
@@ -152,11 +154,10 @@ void DrawDisplay() {
 }
 
 void SendCommandAllSlaves(char command) {
-  TempIngoingStruct.ping = '1';
-  TempIngoingStruct.command = command;  //command for sending the data confirmed
+  CommandStruct.command = command;  //command for sending the data confirmed
 
   for (int i = 0; i < 10; i++) {
-    esp_now_send(Peers[i].peerInfo.peer_addr, (uint8_t*)&TempIngoingStruct, sizeof(TempIngoingStruct));
+    esp_now_send(Peers[i].peerInfo.peer_addr, (uint8_t*)&CommandStruct, sizeof(TempIngoingStruct));
   }
 }
 
@@ -173,48 +174,38 @@ void CalculateAvrg(Sensordata* resultStruct) {
       resultStruct->temp += Peers[i].IngoingStruct.temp;
       resultStruct->hum += Peers[i].IngoingStruct.hum;
       resultStruct->co2 += Peers[i].IngoingStruct.co2;
-      activePeersTotal++;
-
-      esp_now_del_peer(Peers[i].peerInfo.peer_addr);
-      /*
-      if (Peers[i].IngoingStruct.ping != '2') {
-        TempIngoingStruct.command = 'R';
-        esp_err_t sendErr = esp_now_send(Peers[i].peerInfo.peer_addr, (uint8_t*)&TempIngoingStruct, sizeof(TempIngoingStruct));
-
-        if (sendErr != ESP_OK) {
-          Serial.println("Warning: Failed to send reset command to unresponsive peer.");
-        }
-
-        esp_err_t delErr = esp_now_del_peer(Peers[i].peerInfo.peer_addr);
-
-        if (delErr == ESP_OK) {
-          Serial.println("Successfully removed peer from internal ESP-NOW list.");
-        }
-
-        memcpy(&Peers[i].peerInfo.peer_addr, EMPTY_MAC_ADDRESS, sizeof(EMPTY_MAC_ADDRESS));
-
-
-        Serial.println("Removed the peer: ");
-        String ownMacHex;
-        for (int j = 0; j < 6; j++) {
-          String hexPart = String(Peers[i].peerInfo.peer_addr[j], HEX);
-          if (hexPart.length() < 2) hexPart = "0" + hexPart;  // zero-pad if needed
-          ownMacHex += hexPart;
-          if (i < 5) ownMacHex += ":";  // add ':' except after last byte
-        }
-        Serial.println(ownMacHex);
-        Serial.println();
-
-
-        Peers[i].isActive = false;
-        activePeersTotal--;
-      } */
+      activePeersTotal++; 
     }
-        
-    }
-    resultStruct->temp /= activePeersTotal;
-    resultStruct->hum /= activePeersTotal;
-    resultStruct->co2 /= activePeersTotal;
-    resultStruct->activePeersTotal = activePeersTotal;
-    Serial.println(activePeersTotal);
   }
+  resultStruct->temp /= activePeersTotal;
+  resultStruct->hum /= activePeersTotal;
+  resultStruct->co2 /= activePeersTotal;
+  resultStruct->activePeersTotal = activePeersTotal;
+  Serial.println(activePeersTotal);
+}
+
+void PruneUnresponsivePeers() {
+  unsigned long currentTime = millis();
+  const unsigned long TIMEOUT_MS = 30000;  // 30 seconds timeout
+
+  for (int i = 0; i < 10; i++) {
+    if (Peers[i].isActive == true) {
+      if (currentTime - Peers[i].lastSeenTime > TIMEOUT_MS) {
+        // Peer has timed out.
+        Serial.println("Peer timed out. Sending Reset command and removing.");
+
+        CommandStruct.command = 'R';
+        esp_now_send(Peers[i].peerInfo.peer_addr, (uint8_t*)&CommandStruct, sizeof(CommandStruct));
+        CommandStruct.command = ' ';
+
+        //Remove the peer using the ESP-NOW library function
+        esp_now_del_peer(Peers[i].peerInfo.peer_addr);
+        Peers[i].isActive = false;
+
+        //clear address
+        uint8_t EMPTY_MAC_ADDRESS[] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+        memcpy(&Peers[i].peerInfo.peer_addr, EMPTY_MAC_ADDRESS, sizeof(EMPTY_MAC_ADDRESS));
+      }
+    }
+  }
+}
