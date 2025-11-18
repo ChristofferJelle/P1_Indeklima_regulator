@@ -186,7 +186,7 @@ void CalculateAvrg(Sensordata* resultStruct) {
 
 void PruneUnresponsivePeers() {
   unsigned long currentTime = millis();
-  const unsigned long TIMEOUT_MS = 15000;  // 1 seconds timeout
+  const unsigned long TIMEOUT_MS = 15000;  // 15 seconds timeout
 
   for (int i = 0; i < 10; i++) {
     if (Peers[i].isActive == true) {

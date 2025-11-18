@@ -36,7 +36,7 @@ void OnDataRecv(const uint8_t* mac, const uint8_t* incomingData, int len) {
     case 'C':
       ConnectedToMaster = true;
       break;
-    case 'S':
+    case 'S': //send to master
       SendDataToMaster();
       break;
     case 'R':
