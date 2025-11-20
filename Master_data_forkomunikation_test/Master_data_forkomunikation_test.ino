@@ -45,7 +45,7 @@ void setup() {
 
   InitESP32_NOW();
 
-  //i could also just do Serial.println(WiFi.macAddress()); i guess
+  //i could also just do Serial.println(WiFi.macAddress()); i guess, but this is cooler
   Serial.print("[DEFAULT] ESP32 Board MAC Address: ");
   uint8_t* ownMac = readMacAddress();
   //converts array into a string.
@@ -73,9 +73,6 @@ void loop() {
     PruneUnresponsivePeers();
     SendCommandAllSlaves('S');
     CalculateAvrg(&AveragesStruct);
-
-
-
     DrawDisplay();
     timerReset += refreshTimer;
   }

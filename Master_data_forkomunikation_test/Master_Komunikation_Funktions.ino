@@ -7,7 +7,7 @@ void InitDisplay() {
   tft.setTextColor(TFT_WHITE);
   tft.setTextSize(2);  // scale text
 }
-
+//initialise everything that has to do with setting up ESPNOW library
 void InitESP32_NOW() {
   //initialises what kinda wifi mode its in, rn its in accese point mode, so i dont have to connect to uni wifi with own student password.
   WiFi.mode(WIFI_STA);
@@ -54,6 +54,7 @@ int CheckArrayList(struct Sensordata MacToCheck) {
   return -1;
 }
 
+//this funktion just uses a funktion to get the mac address and then returns it....and checks if it actually got it
 uint8_t* readMacAddress() {
   static uint8_t baseMac[6];
   esp_err_t ret = esp_wifi_get_mac(WIFI_IF_STA, baseMac);
@@ -64,11 +65,11 @@ uint8_t* readMacAddress() {
     return nullptr;
   }
 }
-
+//funktion used in recive data callback funktion to register unregisted peers
 void registerPeers(struct Sensordata MacToAdd) {
   int tempIndex;
   uint8_t EMPTY_MAC_ADDRESS[] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
-  // Register peer
+  // loop until u find a spot in the array thats empty
   for (int j = 0; j < 10; j++) {
     if (memcmp(&Peers[j].peerInfo.peer_addr, EMPTY_MAC_ADDRESS, sizeof(Peers[j].peerInfo.peer_addr)) == 0) {
       tempIndex = j;
@@ -77,6 +78,7 @@ void registerPeers(struct Sensordata MacToAdd) {
       continue;
     }
   }
+  //then overwrite that empty spot in the arry with the mac address to add
   memcpy(&Peers[tempIndex].peerInfo.peer_addr, MacToAdd.id, sizeof(Peers[tempIndex].peerInfo.peer_addr));
 
 
@@ -86,6 +88,7 @@ void registerPeers(struct Sensordata MacToAdd) {
   Serial.println("Peer MAC:");
   AddressOfPeer(Peers[tempIndex].peerInfo.peer_addr);
 
+  //code for checking if the connection was a success, if it was then it send the confirmation back the slave
   if (esp_now_add_peer(&Peers[tempIndex].peerInfo) == ESP_OK) {
     Serial.println("Peer added successfully");
     Peers[tempIndex].isActive = true;
@@ -96,15 +99,16 @@ void registerPeers(struct Sensordata MacToAdd) {
     Serial.println(esp_now_add_peer(&Peers[tempIndex].peerInfo));
   }
 }
-
+// this funktion is for formatting the mac address into a hexcode since thats the standard way of displaying a mac address
 void AddressOfPeer(uint8_t peerInfoMAC[]) {
   for (int i = 0; i < 6; i++) {
-    if (peerInfoMAC[i] < 16) { Serial.print("0"); }  // zero pad
+    if (peerInfoMAC[i] < 16) { Serial.print("0"); }  // zero pad 
     Serial.print(peerInfoMAC[i], HEX);
     if (i < 5) { Serial.print(":"); }
   }
 }
 
+//draws the screen using library funktions based on the VT100 standard thing
 void DrawDisplay() {
   tft.fillScreen(TFT_BLACK);
   tft.setCursor(0, 0);
@@ -160,9 +164,8 @@ void SendCommandAllSlaves(char command) {
     esp_now_send(Peers[i].peerInfo.peer_addr, (uint8_t*)&CommandStruct, sizeof(TempIngoingStruct));
   }
 }
-
+//calculates the average by using the varriables stored in Sensordata stuct (likely the AveragesStruct)
 void CalculateAvrg(Sensordata* resultStruct) {
-  uint8_t EMPTY_MAC_ADDRESS[] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
   resultStruct->temp = 0;
   resultStruct->hum = 0;
   resultStruct->co2 = 0;
@@ -184,6 +187,8 @@ void CalculateAvrg(Sensordata* resultStruct) {
   Serial.println(activePeersTotal);
 }
 
+//sets a time on every incomeing sensordata peer to keep track of when that peer was last seen,
+// if it not been seen in a while then remove it, set its mac-adr's spot in array to 0, and restart the SLAVE 
 void PruneUnresponsivePeers() {
   unsigned long currentTime = millis();
   const unsigned long TIMEOUT_MS = 15000;  // 15 seconds timeout
@@ -206,6 +211,6 @@ void PruneUnresponsivePeers() {
         uint8_t EMPTY_MAC_ADDRESS[] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
         memcpy(&Peers[i].peerInfo.peer_addr, EMPTY_MAC_ADDRESS, sizeof(EMPTY_MAC_ADDRESS));
       }
-    }
+    }z
   }
 }
