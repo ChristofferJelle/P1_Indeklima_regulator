@@ -4,14 +4,20 @@ const int servoPin = 9;
 Servo servo; //create servo object
 
 void setup() {
-  servo.attach(servoPin);
+  servo1.attach(servoPin);
 }
 
 void loop() {
+  ServoClose();
+  delay(1000);
+  ServoOpen();
+  delay(1000);
+}
+
+void ServoClose() {
   servo.write(0);
-  delay(1000);
-  servo.write(90);
-  delay(1000);
+}
+
+void ServoOpen() {
   servo.write(180);
-  delay(1000);
 }
