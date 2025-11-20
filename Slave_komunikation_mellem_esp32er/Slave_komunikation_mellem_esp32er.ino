@@ -22,6 +22,7 @@ esp_now_peer_info_t peerInfo;
 
 bool ConnectedToMaster = false;
 
+
 void setup() {
   Serial.begin(115200);
   InitESP32_NOW();
@@ -32,6 +33,8 @@ void setup() {
   //outgoingStruct.id = WiFi.macAddress();
 }
 
+//if its not connected to the master/main esp32 then keep trying to ping with it's outgoing struct, which includes its own mac address as an id so it can be added as a peer, aka be connected
+//it gets conncted when the master returns the 'R' command, which sets ConnectedToMaster to false in the OnDataRecv() callback funktion
 void loop() {
   if (ConnectedToMaster == false) {
     SendDataToMaster();

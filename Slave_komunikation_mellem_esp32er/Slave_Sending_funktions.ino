@@ -23,12 +23,11 @@ void InitESP32_NOW() {
   }
 
   //Register that i want to send to cb. basically says "everytime i send data u just need to run this too"
-  //esp_now_register_send_cb(esp_now_send_cb_t(OnDataSent));
-  //Register that i want to recive to cb. basically says "everytime i send data u just need to run this too"
   esp_now_register_recv_cb(esp_now_recv_cb_t(OnDataRecv));
 }
 
 // Callback when data is received
+// Master esp send commands to it after it registers 
 void OnDataRecv(const uint8_t* mac, const uint8_t* incomingData, int len) {
   memcpy(&CommandStruct, incomingData, sizeof(CommandStruct));
   Serial.println(CommandStruct.command);
@@ -47,11 +46,13 @@ void OnDataRecv(const uint8_t* mac, const uint8_t* incomingData, int len) {
       break;
   }
 }
+//dont really need to be a funktion since its one line if code but its here ig in the case we want to uncomment the error handler part.
 void SendDataToMaster() {
   // Send message via ESP-NOW
   esp_err_t result = esp_now_send(broadcastAddress, (uint8_t*)&outgoingStruct, sizeof(outgoingStruct));
 
   /*
+  //this was "too loud" in the serial moniter so i commented it
   if (result == ESP_OK) {
     Serial.print("Sent with success to ");
     AddressOfPeer(broadcastAddress);
@@ -65,7 +66,7 @@ void SendDataToMaster() {
   */
 }
 
-
+//registers peers with the data it needs to send data
 void registerPeers() {
 
   // Register peer
