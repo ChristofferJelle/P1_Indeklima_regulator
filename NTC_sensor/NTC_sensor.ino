@@ -1,4 +1,4 @@
-const int ntcPin A1
+const int ntcPin = A1;
 
 void setup() {
   Serial.begin(115200);
