@@ -50,8 +50,10 @@ void OnDataRecv(const uint8_t* mac, const uint8_t* incomingData, int len) {
 //dont really need to be a funktion since its one line if code but its here ig in the case we want to uncomment the error handler part.
 void SendDataToMaster() {
   // Send message via ESP-NOW
-  esp_err_t result = esp_now_send(broadcastAddress, (uint8_t*)&outgoingStruct, sizeof(outgoingStruct));
+  //esp_err_t result = esp_now_send(broadcastAddress, (uint8_t*)&outgoingStruct, sizeof(outgoingStruct));
 
+  esp_now_send(broadcastAddress, (uint8_t*)&outgoingStruct, sizeof(outgoingStruct));
+  
   /*
   //this was "too loud" in the serial moniter so i commented it
   if (result == ESP_OK) {

@@ -17,7 +17,6 @@ float NTCRead(bool tempstate) {
 
   if(tempstate) {
     return tempC;
-  } else if(!tempstate) {
-    return tempK;
-  }
+  } 
+  return tempK;
 }

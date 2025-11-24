@@ -4,7 +4,7 @@ float dhtRead() {
 
   if (isnan(humidity)) { //check if any reads failed and exit early
     Serial.println("Failed to read humidity.");
-    return;
+    return 0;
   } else {
     return humidity;
   }

@@ -5,8 +5,8 @@ const int DHTPin = 2;
 DHT dht(DHTPin, DHT11);
 
 //NTC library:
-const int ntcPin = A1;
-float calibValues[3] = {0.5857142857, 0.9085714286, 0.33};
+const int ntcPin = 27;
+float calibValues[3] = { 0.5857142857, 0.9085714286, 0.33 };
 
 //ESP communication libraries:
 #include <esp_now.h>
@@ -36,9 +36,10 @@ bool ConnectedToMaster = false;
 void setup() {
   Serial.begin(115200);
 
-  dht.begin(); //initialise DHT sensor
+  dht.begin();  //initialise DHT sensor
 
   pinMode(ntcPin, INPUT);
+  pinMode(DHTPin, INPUT);
 
   InitESP32_NOW();
   esp_wifi_get_mac(WIFI_IF_STA, outgoingStruct.id);
