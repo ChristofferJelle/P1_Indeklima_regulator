@@ -52,7 +52,7 @@ struct PeerDataContext {
 PeerDataContext Peers[10];
 
 //servo:
-#include <Servo.h> //library for servo
+#include <ESP32Servo.h> //library for servo
 
 const int servoPin = 9;
 Servo servo; //create servo object
@@ -99,7 +99,7 @@ void setup() {
 
   //servo:
   servo.attach(servoPin);
-  servoClose();
+  ServoClose();
 }
 
 void loop() {
