@@ -1,4 +1,5 @@
 const int ntcPin = A1;
+float calibValues[3] = {0.5857142857, 0.9085714286, 0.33};
 
 void setup() {
   Serial.begin(115200);
@@ -13,7 +14,7 @@ void loop() {
 
 float NTCRead(bool tempstate) {
   float rConst = 100000.0; //resistor in voltage divider
-  float vSource = 4.98; //output voltage from Arduino
+  float vSource = 5; //output voltage from Arduino
   float vOut = (analogRead(ntcPin) / 1023.0) * vSource; //output voltage from middle of voltage divider
   float ntc = (vOut * rConst) / (vSource - vOut); //calculate resistance of NTC
 
