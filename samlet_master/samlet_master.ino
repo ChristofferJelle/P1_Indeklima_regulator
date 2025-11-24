@@ -6,7 +6,7 @@
 #include <TFT_eSPI.h>  // LILYGO T-Display library
 #include <SPI.h>
 
-#define BUTTON_PIN 35
+#define BUTTON_PIN 35 
 
 TFT_eSPI tft = TFT_eSPI();  // Create TFT object
 
@@ -18,7 +18,7 @@ TFT_eSPI tft = TFT_eSPI();  // Create TFT object
 struct SensorData {
   int Temp = 20;
   int Humid = 50;
-  int CO2 = 0;
+  int CO2 = 30;
   char CurrentSensorData = 'T';
 };
 

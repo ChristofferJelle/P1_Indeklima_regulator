@@ -25,8 +25,19 @@ void InitESP32_NOW() {
   esp_now_register_recv_cb(esp_now_recv_cb_t(OnDataRecv));
 }
 
+void readCO2() {
+
+
+  Serial.println("analogRead: ");
+  Serial.println(analogRead(39));
+
+  Serial.println("vOut: ");
+  Serial.println(mq135.readVoltage());
+  outgoingStruct.co2 = mq135.readPPM(116.6020682, -2.769034857);
+}
+
 // Callback when data is received
-// Master esp send commands to it after it registers 
+// Master esp send commands to it after it registers
 void OnDataRecv(const uint8_t* mac, const uint8_t* incomingData, int len) {
   memcpy(&CommandStruct, incomingData, sizeof(CommandStruct));
   Serial.println(CommandStruct.command);
@@ -34,9 +45,10 @@ void OnDataRecv(const uint8_t* mac, const uint8_t* incomingData, int len) {
     case 'C':
       ConnectedToMaster = true;
       break;
-    case 'S': //send to master
+    case 'S':  //send to master
       outgoingStruct.hum = dhtRead();
       outgoingStruct.temp = NTCRead(true);
+      readCO2();
       SendDataToMaster();
       break;
     case 'R':
@@ -53,7 +65,7 @@ void SendDataToMaster() {
   //esp_err_t result = esp_now_send(broadcastAddress, (uint8_t*)&outgoingStruct, sizeof(outgoingStruct));
 
   esp_now_send(broadcastAddress, (uint8_t*)&outgoingStruct, sizeof(outgoingStruct));
-  
+
   /*
   //this was "too loud" in the serial moniter so i commented it
   if (result == ESP_OK) {

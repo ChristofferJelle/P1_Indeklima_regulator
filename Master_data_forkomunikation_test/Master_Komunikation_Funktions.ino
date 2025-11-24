@@ -211,6 +211,6 @@ void PruneUnresponsivePeers() {
         uint8_t EMPTY_MAC_ADDRESS[] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
         memcpy(&Peers[i].peerInfo.peer_addr, EMPTY_MAC_ADDRESS, sizeof(EMPTY_MAC_ADDRESS));
       }
-    }z
+    }
   }
 }

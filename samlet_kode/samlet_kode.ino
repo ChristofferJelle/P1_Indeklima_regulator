@@ -5,7 +5,7 @@ const int DHTPin = 2;
 DHT dht(DHTPin, DHT11);
 
 //NTC library:
-const int ntcPin = 27;
+const int ntcPin = 36;
 float calibValues[3] = { 0.5857142857, 0.9085714286, 0.33 };
 
 //ESP communication libraries:
@@ -14,6 +14,14 @@ float calibValues[3] = { 0.5857142857, 0.9085714286, 0.33 };
 #include <esp_wifi.h>
 #include <string.h>
 //make float array with all data in it, maybe #define temp array[3] = temp
+
+
+//CO2
+#include <MQSensor.h>
+
+MQSensor mq135(39, 20000, 3.3, 10);
+float r0 = mq135.setR0(20200);  //renluft ved 20200ohm
+
 
 struct Sensordata {
   float temp = 120;
@@ -35,6 +43,10 @@ bool ConnectedToMaster = false;
 
 void setup() {
   Serial.begin(115200);
+  analogReadResolution(10);
+
+  Serial.print("R0: ");
+  Serial.println(r0);
 
   dht.begin();  //initialise DHT sensor
 
