@@ -1,12 +1,15 @@
 float NTCRead(bool tempstate) {
-  float rConst = 100000.0;                                         //resistor in voltage divider
-  float vSource = 3.33;                                             //output voltage from Arduino
-  float vOut = (analogRead(ntcPin) / (pow(2, 10) - 1) * vSource);  //output voltage from middle of voltage divider
-  float ntc = (vOut * rConst) / (vSource - vOut);                  //calculate resistance of NTC
-  /*
+  float rConst = 100000.0;                                             //resistor in voltage divider
+  float vSource = 3.33;                                                //output voltage from Arduino
+  float vOut = vSource * analogRead(ntcPin) / (pow(2.0, 12.0) - 1.0);  //output voltage from middle of voltage divider
+  float ntc = (avgVolt * rConst) / (vSource - avgVolt);  //calculate resistance of NTC
 
-
-*/
+  Serial.print("analogReadNTC: \t ");
+  float adc = analogRead(ntcPin);
+  Serial.print(adc);
+  Serial.print("\t");
+  //  vOut = 3.3*adc/1023;
+  Serial.println(avgVolt);
 
   //Steinhart-Hart coefficients from datasheet
   //for NTCLE100E3104JBO
@@ -17,7 +20,9 @@ float NTCRead(bool tempstate) {
   float R25 = 100000;  //reference resistance
 
   float tempK = 1.0 / (A + B * log(ntc / R25) + C * (pow(log(ntc / R25), 2.0)) + D * (pow(log(ntc / R25), 3.0)));  //calculate temperature in K
-  float tempC = tempK - 273.15;                                                                                    //calculate temperature in C
+  float tempC = tempK - 273.15;
+  Serial.print("temp: \t ");
+  Serial.print(tempC);  //calculate temperature in C
 
   if (tempstate) {
     return tempC;

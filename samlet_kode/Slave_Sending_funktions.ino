@@ -26,14 +26,17 @@ void InitESP32_NOW() {
 }
 
 void readCO2() {
-
-
-  Serial.println("analogRead: ");
+/*
+  Serial.println("analogReadCO2: ");
   Serial.println(analogRead(39));
 
-  Serial.println("vOut: ");
-  Serial.println(mq135.readVoltage());
+  Serial.println("vOutCO2: ");
+  Serial.println(mq135.calculateVolt(10));
+*/
   outgoingStruct.co2 = mq135.readPPM(116.6020682, -2.769034857);
+
+  //Serial.println(outgoingStruct.co2);
+
 }
 
 // Callback when data is received

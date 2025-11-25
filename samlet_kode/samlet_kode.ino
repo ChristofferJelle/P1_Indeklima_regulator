@@ -19,8 +19,8 @@ float calibValues[3] = { 0.5857142857, 0.9085714286, 0.33 };
 //CO2
 #include <MQSensor.h>
 
-MQSensor mq135(39, 20000, 3.3, 10);
-float r0 = mq135.setR0(20200);  //renluft ved 20200ohm
+MQSensor mq135(39, 20000.0, 3.33, 12.0);
+
 
 
 struct Sensordata {
@@ -43,7 +43,7 @@ bool ConnectedToMaster = false;
 
 void setup() {
   Serial.begin(115200);
-  analogReadResolution(10);
+  float r0 = mq135.setR0(20000);  //renluft ved 20200ohm;
 
   Serial.print("R0: ");
   Serial.println(r0);

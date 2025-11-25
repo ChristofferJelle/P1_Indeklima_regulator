@@ -58,7 +58,7 @@ const int servoPin = 9;
 Servo servo; //create servo object
 
 
-int refreshTimer = 10000;
+int refreshTimer = 100;
 int timerReset = refreshTimer + millis();
 
 void setup() {
