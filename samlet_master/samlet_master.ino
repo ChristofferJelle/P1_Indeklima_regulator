@@ -3,17 +3,22 @@
 #include <WiFi.h>
 #include <esp_wifi.h>
 
+//remember to edit library header files https://jensd.dk/doc/esp32/esp32s3.html
 #include <TFT_eSPI.h>  // LILYGO T-Display library
 #include <SPI.h>
 
-#define BUTTON_PIN 35 
+//serva
+#include <ESP32Servo.h> //library for servo
+const int servoPin = 21;
+Servo servo; //create servo object
 
 TFT_eSPI tft = TFT_eSPI();  // Create TFT object
+#define BUTTON_PIN 35
 
 //Rotary encoder:
-#define CLK 4  //1st click
-#define DT 3   //2nd click
-#define SW 2   //button click
+#define CLK 16  //1st click
+#define DT 17   //2nd click
+#define SW 18   //button click
 
 struct SensorData {
   int Temp = 20;
@@ -50,16 +55,10 @@ struct PeerDataContext {
   unsigned long lastSeenTime;  // <--- Add this
 };
 PeerDataContext Peers[10];
-
-//servo:
-#include <ESP32Servo.h> //library for servo
-
-const int servoPin = 9;
-Servo servo; //create servo object
-
-
-int refreshTimer = 100;
+int refreshTimer = 1000;
 int timerReset = refreshTimer + millis();
+
+
 
 void setup() {
   Serial.begin(115200);
@@ -85,7 +84,7 @@ void setup() {
     }
     Serial.println(ownMacHex);
   }
-
+/*
   //rotary encoder:
   pinMode(CLK, INPUT);
   pinMode(DT, INPUT);
@@ -100,6 +99,7 @@ void setup() {
   //servo:
   servo.attach(servoPin);
   ServoClose();
+  */
 }
 
 void loop() {
@@ -118,5 +118,5 @@ void loop() {
     timerReset += refreshTimer;
   }
 
-  readEncoder();
+ //readEncoder();
 }
