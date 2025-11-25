@@ -25,20 +25,6 @@ void InitESP32_NOW() {
   esp_now_register_recv_cb(esp_now_recv_cb_t(OnDataRecv));
 }
 
-void readCO2() {
-/*
-  Serial.println("analogReadCO2: ");
-  Serial.println(analogRead(39));
-
-  Serial.println("vOutCO2: ");
-  Serial.println(mq135.calculateVolt(10));
-*/
-  outgoingStruct.co2 = mq135.readPPM(116.6020682, -2.769034857);
-
-  //Serial.println(outgoingStruct.co2);
-
-}
-
 // Callback when data is received
 // Master esp send commands to it after it registers
 void OnDataRecv(const uint8_t* mac, const uint8_t* incomingData, int len) {
@@ -51,7 +37,7 @@ void OnDataRecv(const uint8_t* mac, const uint8_t* incomingData, int len) {
     case 'S':  //send to master
       outgoingStruct.hum = dhtRead();
       outgoingStruct.temp = NTCRead(true);
-      readCO2();
+      outgoingStruct.co2 = readPPM(116.6020682, -2.769034857);
       SendDataToMaster();
       break;
     case 'R':
