@@ -6,7 +6,7 @@ float NTCRead(bool tempstate) {
 
 
   float avgVolt = 0;
-  int samples = 20;
+  int samples = 35;
   for (int i = 0; i < samples; i++) {
     avgVolt += vOut;
   }
