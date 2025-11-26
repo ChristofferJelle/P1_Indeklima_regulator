@@ -6,7 +6,7 @@ DHT dht(DHTPin, DHT11);
 
 //NTC library:
 const int ntcPin = 36;
-float bits = 12.0;
+const float bits = 12.0;
 float calibValues[3] = { 0.5857142857, 0.9085714286, 0.33 };
 
 //ESP communication libraries:

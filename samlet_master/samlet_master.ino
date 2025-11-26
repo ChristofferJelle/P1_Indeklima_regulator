@@ -8,17 +8,17 @@
 #include <SPI.h>
 
 //serva
-#include <ESP32Servo.h> //library for servo
+#include <ESP32Servo.h>  //library for servo
 const int servoPin = 21;
-Servo servo; //create servo object
+Servo servo;  //create servo object
 
 TFT_eSPI tft = TFT_eSPI();  // Create TFT object
 #define BUTTON_PIN 35
 
 //Rotary encoder:
-#define CLK 16  //1st click
-#define DT 17   //2nd click
-#define SW 18   //button click
+#define CLK 43  //1st click
+#define DT 44   //2nd click
+#define SW 21   //button click
 
 struct SensorData {
   int Temp = 20;
@@ -55,7 +55,7 @@ struct PeerDataContext {
   unsigned long lastSeenTime;  // <--- Add this
 };
 PeerDataContext Peers[10];
-int refreshTimer = 1000;
+int refreshTimer = 500;
 int timerReset = refreshTimer + millis();
 
 
@@ -84,22 +84,21 @@ void setup() {
     }
     Serial.println(ownMacHex);
   }
-
+  
   //rotary encoder:
   pinMode(CLK, INPUT);
   pinMode(DT, INPUT);
   pinMode(SW, INPUT_PULLUP);
 
   prevButtonSate = digitalRead(SW);
+  
   Serial.println(prevButtonSate);
-
   // Read the initial state of CLK
   lastStateCLK = digitalRead(CLK);
 
   //servo:
   servo.attach(servoPin);
   ServoClose();
-  
 }
 
 void loop() {
@@ -118,5 +117,5 @@ void loop() {
     timerReset += refreshTimer;
   }
 
- //readEncoder();
+  //readEncoder();
 }
