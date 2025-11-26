@@ -84,7 +84,7 @@ void setup() {
     }
     Serial.println(ownMacHex);
   }
-/*
+
   //rotary encoder:
   pinMode(CLK, INPUT);
   pinMode(DT, INPUT);
@@ -99,7 +99,7 @@ void setup() {
   //servo:
   servo.attach(servoPin);
   ServoClose();
-  */
+  
 }
 
 void loop() {
