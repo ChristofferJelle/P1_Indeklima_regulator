@@ -1,7 +1,7 @@
 // Rotary Encoder Inputs
-#define CLK 4  //1st click
-#define DT 3   //2nd click
-#define SW 2   //button click
+#define CLK 37  //1st click
+#define DT 38   //2nd click
+#define SW 39   //button click
 
 struct SensorData {
   int Temp = 20;

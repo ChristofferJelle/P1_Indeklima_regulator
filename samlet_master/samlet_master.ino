@@ -10,8 +10,15 @@
 //serva
 #include <ESP32Servo.h>  //library for servo
 const int servoPin = 17;
-const int shuntPin = 36;
+
 Servo servo;  //create servo object
+bool statusServo = false;
+
+const int shuntPin = 36;
+int shuntRefreshTimer = 2500;
+int shuntTimerReset = shuntRefreshTimer + millis();
+bool shuntTimeout = false;
+
 
 TFT_eSPI tft = TFT_eSPI();  // Create TFT object
 #define BUTTON_PIN 35
@@ -21,14 +28,14 @@ TFT_eSPI tft = TFT_eSPI();  // Create TFT object
 #define DT 38   //2nd click
 #define SW 39   //button click
 
-struct SensorData {
+struct SensorDataLimit {
   int Temp = 20;
   int Humid = 50;
   int CO2 = 30;
   char CurrentSensorData = 'T';
 };
 
-struct SensorData s1;
+struct SensorDataLimit s1;
 
 int currentStateCLK;
 int lastStateCLK;
@@ -52,12 +59,13 @@ Sensordata TempIngoingStruct, CommandStruct, AveragesStruct;
 struct PeerDataContext {
   esp_now_peer_info_t peerInfo;
   Sensordata IngoingStruct;
-  bool isActive;               // Flag to track active peers
-  unsigned long lastSeenTime;  // <--- Add this
+  bool isActive;  // Flag to track active peers
+  unsigned long lastSeenTime;
 };
 PeerDataContext Peers[10];
-int refreshTimer = 2000;
+int refreshTimer = 1000;
 int timerReset = refreshTimer + millis();
+
 
 
 
@@ -109,8 +117,9 @@ void loop() {
     SendCommandAllSlaves('R');
     ESP.restart();
   }
-  if (ShuntCurrent() < 0.2) {
-    delay(1000);
+
+
+  if (millis() >= shuntTimerReset) {
     ServoClose();
     if (millis() >= timerReset) {
       PruneUnresponsivePeers();
@@ -119,10 +128,26 @@ void loop() {
       DrawDisplay();
       timerReset += refreshTimer;
       ServoOpen();
+      shuntTimerReset += shuntRefreshTimer;
     }
-  } else {
-    servo.release();
-    delay(1500);
+    if (ShuntCurrent() > 0.22) {
+      shuntTimeout = true
+    }
+  }
+  // Vi er i timeout-tilstand → skriv servo-position
+  if (shuntTimeout) {
+    if (statusServo) {
+      servo.write(180);
+    } else {
+      servo.write(0);
+    }
+    shuntTimeout = true;
+    shuntTimerReset += shuntRefreshTimer;
+  }
+
+  // Reset timeout når tiden er gået
+  if (millis() >= shuntTimerReset && shuntTimeout) {
+    shuntTimeout = false;
   }
 
   readEncoder();
