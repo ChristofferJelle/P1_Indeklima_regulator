@@ -1,6 +1,6 @@
-#include <Servo.h> //library for servo
+#include <ESP32Servo.h>
 
-const int servoPin = 9;
+const int servoPin = 13;
 Servo servo; //create servo object
 
 void setup () {
@@ -10,8 +10,7 @@ void setup () {
 void loop() {
   servo.write(0);
   delay(1000);
-  servo.write(90);
-  delay(1000);
+
   servo.write(180);
-  delay(1000);
+
 }

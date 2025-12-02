@@ -9,16 +9,17 @@
 
 //serva
 #include <ESP32Servo.h>  //library for servo
-const int servoPin = 21;
+const int servoPin = 17;
+const int shuntPin = 36;
 Servo servo;  //create servo object
 
 TFT_eSPI tft = TFT_eSPI();  // Create TFT object
 #define BUTTON_PIN 35
 
 //Rotary encoder:
-#define CLK 43  //1st click
-#define DT 44   //2nd click
-#define SW 21   //button click
+#define CLK 37  //1st click
+#define DT 38   //2nd click
+#define SW 39   //button click
 
 struct SensorData {
   int Temp = 20;
@@ -55,7 +56,7 @@ struct PeerDataContext {
   unsigned long lastSeenTime;  // <--- Add this
 };
 PeerDataContext Peers[10];
-int refreshTimer = 500;
+int refreshTimer = 2000;
 int timerReset = refreshTimer + millis();
 
 
@@ -84,14 +85,14 @@ void setup() {
     }
     Serial.println(ownMacHex);
   }
-  
+
   //rotary encoder:
   pinMode(CLK, INPUT);
   pinMode(DT, INPUT);
   pinMode(SW, INPUT_PULLUP);
 
   prevButtonSate = digitalRead(SW);
-  
+
   Serial.println(prevButtonSate);
   // Read the initial state of CLK
   lastStateCLK = digitalRead(CLK);
@@ -108,14 +109,21 @@ void loop() {
     SendCommandAllSlaves('R');
     ESP.restart();
   }
-
-  if (millis() >= timerReset) {
-    PruneUnresponsivePeers();
-    SendCommandAllSlaves('S');
-    CalculateAvrg(&AveragesStruct);
-    DrawDisplay();
-    timerReset += refreshTimer;
+  if (ShuntCurrent() < 0.2) {
+    delay(1000);
+    ServoClose();
+    if (millis() >= timerReset) {
+      PruneUnresponsivePeers();
+      SendCommandAllSlaves('S');
+      CalculateAvrg(&AveragesStruct);
+      DrawDisplay();
+      timerReset += refreshTimer;
+      ServoOpen();
+    }
+  } else {
+    servo.release();
+    delay(1500);
   }
 
-  //readEncoder();
+  readEncoder();
 }
