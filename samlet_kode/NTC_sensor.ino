@@ -1,14 +1,14 @@
 float NTCRead(bool tempstate) {
   float rConst = 100000.0;                                             //resistor in voltage divider
   float vSource = 3.33;                                                //output voltage from Arduino
-  float vOut = vSource * analogRead(ntcPin) / (pow(2.0, bits) - 1.0);  //output voltage from middle of voltage divider
+  //float vOut = vSource * analogRead(ntcPin) / (pow(2.0, bits) - 1.0);  //output voltage from middle of voltage divider
 
 
 
   float avgVolt = 0;
   int samples = 35;
   for (int i = 0; i < samples; i++) {
-    avgVolt += vOut;
+    avgVolt += vSource * analogRead(ntcPin) / (pow(2.0, bits) - 1.0);
   }
   avgVolt = avgVolt / samples;
 

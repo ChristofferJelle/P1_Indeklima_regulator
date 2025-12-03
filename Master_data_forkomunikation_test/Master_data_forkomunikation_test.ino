@@ -7,7 +7,7 @@
 
 #define BUTTON_PIN 35
 
-TFT_eSPI tft = TFT_eSPI();  // Create TFT object
+TFT_eSPI tft = TFT_eSPI();  // Create TFT object+
 
 
 
@@ -25,14 +25,14 @@ Sensordata TempIngoingStruct, CommandStruct, AveragesStruct;
 struct PeerDataContext {
   esp_now_peer_info_t peerInfo;
   Sensordata IngoingStruct;
-  bool isActive;               // Flag to track active peers
-  unsigned long lastSeenTime;  // <--- Add this
+  bool isActive;              
+  unsigned long lastSeenTime;  
 };
 PeerDataContext Peers[10];
 
 
 
-int refreshTimer = 10000;
+int refreshTimer = 100;
 int timerReset = refreshTimer + millis();
 
 void setup() {

@@ -191,7 +191,7 @@ void CalculateAvrg(Sensordata* resultStruct) {
 // if it not been seen in a while then remove it, set its mac-adr's spot in array to 0, and restart the SLAVE 
 void PruneUnresponsivePeers() {
   unsigned long currentTime = millis();
-  const unsigned long TIMEOUT_MS = 15000;  // 15 seconds timeout
+  const unsigned long TIMEOUT_MS = refreshInterval+500;  // 3 seconds timeout
 
   for (int i = 0; i < 10; i++) {
     if (Peers[i].isActive == true) {
