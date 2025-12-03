@@ -35,15 +35,11 @@ void readEncoder() {
       case 1:
         s1.CurrentSensorData = 'H';
         Serial.println("set to change limit value of Humid");
-        ServoClose();
+
         break;
       case 2:
         s1.CurrentSensorData = 'C';
         Serial.println("set to change limit value of co2");
-        ServoOpen();
-  
-        //HACK
-        ButtonPresses = 0;
         break;
       case 3:
         s1.CurrentSensorData = 'T';

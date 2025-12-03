@@ -34,9 +34,9 @@ TFT_eSPI tft = TFT_eSPI();  // Create TFT object
 #define SW 39   //button click
 
 struct SensorDataLimit {
-  int Temp = 20;
+  int Temp = 30;
   int Humid = 50;
-  int CO2 = 30;
+  int CO2 = 600;
   char CurrentSensorData = 'T';
 };
 
@@ -126,8 +126,7 @@ void loop() {
   }
 
   float shuntCurrent = ShuntCurrent();
-  Serial.println(shuntCurrent);
-  Serial.println(analogRead(shuntPin));
+
   if (millis() - lastRefresh >= refreshInterval) {
     PruneUnresponsivePeers();
     SendCommandAllSlaves('S');
@@ -135,12 +134,19 @@ void loop() {
     DrawDisplay();
     lastRefresh = millis();
   }
+  
+  if (!shuntTimeout) {
+    if ((AveragesStruct.temp >= s1.Temp || AveragesStruct.hum >= s1.Humid) || AveragesStruct.co2 >= s1.CO2) {
+      ServoOpen();
+    } else {
+      ServoClose();
+    }
+  }
+
   if (shuntCurrent > 2.94 && !shuntTimeout) {
 
     shuntTimeout = true;
   }
-
-
   // Vi er i timeout-tilstand → skriv servo-position
   if (shuntTimeout && !shuntActionDone) {
     if (servoState == SWEEP_OPEN) {
