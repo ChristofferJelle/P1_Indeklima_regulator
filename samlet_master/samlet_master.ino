@@ -20,7 +20,7 @@ enum ServoState {
 ServoState servoState = SWEEP_CLOSE;
 const int shuntPin = 32;
 unsigned long lastShuntTime = 0;
-const unsigned long shuntInterval = 5000;
+const unsigned long shuntInterval = 1000;
 bool shuntTimeout = false;
 bool shuntActionDone = false;
 
@@ -135,7 +135,7 @@ void loop() {
     DrawDisplay();
     lastRefresh = millis();
   }
-  if (shuntCurrent > 2.5 && !shuntTimeout) {
+  if (shuntCurrent > 2.94 && !shuntTimeout) {
 
     shuntTimeout = true;
   }

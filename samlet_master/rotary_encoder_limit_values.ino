@@ -41,6 +41,7 @@ void readEncoder() {
         s1.CurrentSensorData = 'C';
         Serial.println("set to change limit value of co2");
         ServoOpen();
+  
         //HACK
         ButtonPresses = 0;
         break;
