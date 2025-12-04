@@ -32,6 +32,7 @@ TFT_eSPI tft = TFT_eSPI();  // Create TFT object
 #define CLK 37  //1st click
 #define DT 38   //2nd click
 #define SW 39   //button click
+bool interupt = false;
 
 struct SensorDataLimit {
   int Temp = 30;
@@ -49,7 +50,7 @@ int prevButtonSate;
 unsigned int ButtonPresses = 0;
 
 
-
+//hack
 struct Sensordata {
   float temp;
   float hum;
@@ -118,52 +119,54 @@ void setup() {
 }
 
 void loop() {
-  int buttonState = digitalRead(BUTTON_PIN);
-  if (buttonState == LOW) {
-    Serial.println("Button pressed!");
-    SendCommandAllSlaves('R');
-    ESP.restart();
-  }
-
-  float shuntCurrent = ShuntCurrent();
-
-  if (millis() - lastRefresh >= refreshInterval) {
-    PruneUnresponsivePeers();
-    SendCommandAllSlaves('S');
-    CalculateAvrg(&AveragesStruct);
-    DrawDisplay();
-    lastRefresh = millis();
-  }
-  
-  if (!shuntTimeout) {
-    if ((AveragesStruct.temp >= s1.Temp || AveragesStruct.hum >= s1.Humid) || AveragesStruct.co2 >= s1.CO2) {
-      ServoOpen();
-    } else {
-      ServoClose();
-    }
-  }
-
-  if (shuntCurrent > 2.94 && !shuntTimeout) {
-
-    shuntTimeout = true;
-  }
-  // Vi er i timeout-tilstand → skriv servo-position
-  if (shuntTimeout && !shuntActionDone) {
-    if (servoState == SWEEP_OPEN) {
-      servo.write(0);
-    } else if (servoState == SWEEP_CLOSE) {
-      servo.write(180);
-    }
-    lastShuntTime = millis();
-    shuntActionDone = true;
-    servoState = IDLE;
-  }
-
-  // Reset timeout når tiden er gået
-  if ((millis() - lastShuntTime >= shuntInterval && shuntTimeout) && shuntActionDone) {
-    shuntTimeout = false;
-    shuntActionDone = false;
-  }
-
   readEncoder();
+
+  if (interupt) {
+    int buttonState = digitalRead(BUTTON_PIN);
+    if (buttonState == LOW) {
+      Serial.println("Button pressed!");
+      SendCommandAllSlaves('R');
+      ESP.restart();
+    }
+
+    float shuntCurrent = ShuntCurrent();
+
+    if (millis() - lastRefresh >= refreshInterval) {
+      PruneUnresponsivePeers();
+      SendCommandAllSlaves('S');
+      CalculateAvrg(&AveragesStruct);
+      DrawDisplay();
+      lastRefresh = millis();
+    }
+
+    if (!shuntTimeout) {
+      if ((AveragesStruct.temp >= s1.Temp || AveragesStruct.hum >= s1.Humid) || AveragesStruct.co2 >= s1.CO2) {
+        ServoOpen();
+      } else {
+        ServoClose();
+      }
+    }
+
+    if (shuntCurrent > 2.94 && !shuntTimeout) {
+
+      shuntTimeout = true;
+    }
+    // Vi er i timeout-tilstand → skriv servo-position
+    if (shuntTimeout && !shuntActionDone) {
+      if (servoState == SWEEP_OPEN) {
+        servo.write(0);
+      } else if (servoState == SWEEP_CLOSE) {
+        servo.write(180);
+      }
+      lastShuntTime = millis();
+      shuntActionDone = true;
+      servoState = IDLE;
+    }
+
+    // Reset timeout når tiden er gået
+    if ((millis() - lastShuntTime >= shuntInterval && shuntTimeout) && shuntActionDone) {
+      shuntTimeout = false;
+      shuntActionDone = false;
+    }
+  }
 }

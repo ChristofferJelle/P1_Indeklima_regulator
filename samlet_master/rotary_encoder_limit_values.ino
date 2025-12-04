@@ -23,6 +23,9 @@ void readEncoder() {
   if (currentStateCLK != lastStateCLK && currentStateCLK == 1) {
     bool direction = digitalRead(DT) != currentStateCLK;
     UpdateSensorData(direction);
+    interupt = true;
+  } else {
+    interupt = false;
   }
   lastStateCLK = currentStateCLK;
 
