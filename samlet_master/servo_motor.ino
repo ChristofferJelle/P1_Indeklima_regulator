@@ -22,3 +22,4 @@ float ShuntCurrent() {
   float current = avgVolt / modstand;
   return current;
 }
+

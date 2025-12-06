@@ -7,13 +7,13 @@ void UpdateSensorData(bool direction) {
       break;
     case 'H':
       s1.Humid += direction ? -1 : 1;
-      Serial.print("Humidity: ");
-      Serial.println(s1.Humid);
+      //Serial.print("Humidity: ");
+      //Serial.println(s1.Humid);
       break;
     case 'C':
       s1.CO2 += direction ? -1 : 1;
-      Serial.print("CO2: ");
-      Serial.println(s1.CO2);
+      //Serial.print("CO2: ");
+      //Serial.println(s1.CO2);
       break;
   }
 }
@@ -23,9 +23,7 @@ void readEncoder() {
   if (currentStateCLK != lastStateCLK && currentStateCLK == 1) {
     bool direction = digitalRead(DT) != currentStateCLK;
     UpdateSensorData(direction);
-    interupt = true;
-  } else {
-    interupt = false;
+    //Serial.print("GET ME OUTTTTTTTTTT OF THIS STATE");
   }
   lastStateCLK = currentStateCLK;
 
@@ -33,7 +31,9 @@ void readEncoder() {
 
   if (buttonState == HIGH && prevButtonSate == LOW) {
     ++ButtonPresses;
-
+    // GO INTO TIMEOUT STATE LITTERLY JUST SO THE DISPLAY CHANGES
+    roteryLastRefresh = millis();
+    roteryEncoderState = TIMEOUT;
     switch (ButtonPresses) {
       case 1:
         s1.CurrentSensorData = 'H';
@@ -54,4 +54,39 @@ void readEncoder() {
     }
   }
   prevButtonSate = digitalRead(SW);
+}
+
+void DrawLimitValues() {
+  tft.fillScreen(TFT_BLACK);
+  tft.setCursor(0, 0);
+  tft.setTextSize(2);
+  tft.println("CHANGING THRESHHOLDS");
+
+  tft.setCursor(0, 30);
+  if (s1.CurrentSensorData == 'T') {
+    tft.print("*");
+  }
+  tft.print("Temp Limit: ");
+  tft.drawNumber(s1.Temp, tft.getCursorX(), tft.getCursorY());  
+
+  tft.setCursor(0, 60);
+  if (s1.CurrentSensorData == 'H') {
+    tft.print("*");
+  }
+  tft.print("Hum Limit: ");
+  tft.drawNumber(s1.Humid, tft.getCursorX(), tft.getCursorY());
+
+  tft.setCursor(0, 90);
+  if (s1.CurrentSensorData == 'C') {
+    tft.print("*");
+  }
+  tft.print("CO2 Limit: ");
+  tft.drawNumber(s1.CO2, tft.getCursorX(), tft.getCursorY());
+}
+
+void InterruptCallback() {
+  if (roteryEncoderState != TIMEOUT && millis() - roteryLastRefresh >= roteryRefreshInterval) {
+    roteryLastRefresh = millis();
+    roteryEncoderState = TIMEOUT;
+  }
 }

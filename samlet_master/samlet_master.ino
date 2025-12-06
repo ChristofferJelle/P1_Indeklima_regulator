@@ -35,16 +35,25 @@ TFT_eSPI tft = TFT_eSPI();  // Create TFT object
 bool interupt = false;
 
 struct SensorDataLimit {
-  int Temp = 30;
-  int Humid = 50;
-  int CO2 = 600;
+  long Temp = 30;
+  long Humid = 50;
+  long CO2 = 600;
   char CurrentSensorData = 'T';
 };
-
 struct SensorDataLimit s1;
 
+enum RoteryEncoderState {
+  IDLESTATE,
+  TIMEOUT
+};
+RoteryEncoderState roteryEncoderState = IDLESTATE;
 int currentStateCLK;
 int lastStateCLK;
+unsigned long roteryLastRefresh = 0;
+unsigned long limitDisplayLastRefresh = 0;
+const unsigned long limitDisplayrefreshInterval = 100;
+const unsigned long roteryRefreshInterval = 1100;
+
 
 int prevButtonSate;
 unsigned int ButtonPresses = 0;
@@ -103,16 +112,18 @@ void setup() {
   }
 
   //rotary encoder:
-  pinMode(CLK, INPUT);
-  pinMode(DT, INPUT);
+  pinMode(CLK, INPUT_PULLUP);
+  pinMode(DT, INPUT_PULLUP);
   pinMode(SW, INPUT_PULLUP);
+
+  attachInterrupt(CLK, InterruptCallback, FALLING);
 
   prevButtonSate = digitalRead(SW);
 
   Serial.println(prevButtonSate);
   // Read the initial state of CLK
   lastStateCLK = digitalRead(CLK);
-
+  currentStateCLK = digitalRead(CLK);
   //servo:
   servo.attach(servoPin);
   ServoClose();
@@ -120,8 +131,15 @@ void setup() {
 
 void loop() {
   readEncoder();
+  unsigned long timeNow = millis();
+  if (timeNow - roteryLastRefresh >= roteryRefreshInterval) {
+    roteryEncoderState = IDLESTATE;
+  } else if (roteryEncoderState == TIMEOUT && timeNow - limitDisplayLastRefresh >= limitDisplayrefreshInterval) {
+    DrawLimitValues();
+    limitDisplayLastRefresh = timeNow;
+  }
 
-  if (interupt) {
+  if (roteryEncoderState != TIMEOUT) {
     int buttonState = digitalRead(BUTTON_PIN);
     if (buttonState == LOW) {
       Serial.println("Button pressed!");
