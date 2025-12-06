@@ -73,7 +73,7 @@ void DrawLimitValues() {
   if (s1.CurrentSensorData == 'H') {
     tft.print("*");
   }
-  tft.print("Hum Limit: ");
+  tft.print("Humid Limit: ");
   tft.drawNumber(s1.Humid, tft.getCursorX(), tft.getCursorY());
 
   tft.setCursor(0, 90);

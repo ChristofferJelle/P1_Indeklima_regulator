@@ -121,7 +121,7 @@ void DrawDisplay() {
   tft.println(" C");
 
   tft.setCursor(0, 60);
-  tft.print("Hum: ");
+  tft.print("Humid: ");
   tft.print(AveragesStruct.hum, 1);
   tft.println(" %");
 
