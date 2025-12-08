@@ -51,8 +51,6 @@ void RegisterPeers(struct SensordataTp newPeerStruct) {
     if (memcmp(&peersArr[i].peerInfo.peer_addr, EMPTY_MAC_ADDRESS, sizeof(peersArr[i].peerInfo.peer_addr)) == 0) { //check whether the 2 are equal
       int index = i;
       break;
-    } else {
-      continue;
     }
   }
   //overwrite empty spot in the peersArr with the new MAC-address
