@@ -10,10 +10,10 @@ void InitESP() {
 
   //initialise + setup ESP_NOW library:
   WiFi.mode(WIFI_STA); //access point mode to get around using 'actual' wifi
-  if (esp_now_init() != ESP_OK) { //initialise ESP_NOW for communication without router
-    Serial.println("Error initializing ESP-NOW");
+  if (esp_now_init() != ESP_OK) { //initialise ESP-NOW for communication without router
+    Serial.println("Error initialising ESP-NOW");
   }
-  esp_now_register_recv_cb(esp_now_recv_cb_t(OnDataReceived)); //we want to recive to cb -> every time data is sent, OnDataRecieved() is called
+  esp_now_register_recv_cb(esp_now_recv_cb_t(OnDataReceived)); //every time data is sent, OnDataRecieved() is called
 }
 
 void InitRotaryEncoder() {
@@ -24,9 +24,7 @@ void InitRotaryEncoder() {
 
   prevButtonSate = digitalRead(SW_PIN);
 
-  Serial.println(prevButtonSate);
-
-  //Read the initial state of CLK
+  //read initial state of CLK
   lastStateCLK = digitalRead(CLK_PIN);
   currentStateCLK = digitalRead(CLK_PIN);
 }

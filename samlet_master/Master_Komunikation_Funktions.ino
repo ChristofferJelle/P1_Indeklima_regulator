@@ -156,8 +156,7 @@ void CalculateAverage(struct SensordataTp* resultStruct) {
   resultStruct->activePeers = activePeersTotal;
 }
 
-//sets a timer for every incoming sensordata peer to keep track of when that peer was last seen,
-//if it has not been seen in a while, remove it, set its mac-adress spot in peersArr to 0, and restart the slave (peer)
+//if slave has not been seen in a while, remove it, set its mac-adress spot in peersArr to 0, and restart the peer (slave)
 void PruneUnresponsivePeers() {
   unsigned long currentTime = millis();
   const unsigned long TIMEOUT_MS = dataRequestInterval + 2000; //peers has 2 seconds to respond before being pruned
