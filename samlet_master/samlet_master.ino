@@ -86,30 +86,26 @@ unsigned int ButtonPresses = 0;
 
 void setup() {
   Serial.begin(115200);
-  pinMode(BUTTON_PIN, INPUT);
-
   //Serial.println();
 
-  InitDisplay();
-  InitESP_NOW();
+  InitESP();
+  InitRotaryEncoder();
+  InitServo();
 
   //could also just do Serial.println(WiFi.macAddress());, but this is cooler
   Serial.print("[DEFAULT] ESP32 Board MAC Address: ");
   uint8_t* ownMac = ReadMacAddress();
-  //converts array into a string.
+  //convert array into a string
   if (ownMac != nullptr) {
     String ownMacHex;
     for (int i = 0; i < 6; i++) {
       String hexPart = String(ownMac[i], HEX);
-      if (hexPart.length() < 2) hexPart = "0" + hexPart;  // zero-pad if needed
+      if (hexPart.length() < 2) hexPart = "0" + hexPart; //zero-pad if needed
       ownMacHex += hexPart;
-      if (i < 5) ownMacHex += ":";  // add ':' except after last byte
+      if (i < 5) {ownMacHex += ":";} //add ':' except after last byte
     }
     Serial.println(ownMacHex);
   }
-
-  InitRotaryEncoder();
-  InitServo();
 }
 
 void loop() {
@@ -156,16 +152,16 @@ void loop() {
     // Vi er i timeout-tilstand → skriv servo-position
     if (shuntTimeout && !shuntActionDone) {
       if (servoState == sweepOpen) {
-        servo.write(0);
+        servoClose();
       } else if (servoState == sweepClose) {
-        servo.write(180);
+        servoOpen();
       }
       lastShuntTime = millis();
       shuntActionDone = true;
       servoState = idle;
     }
 
-    // Reset timeout når tiden er gået
+    //reset timeout when time runs out
     if ((millis() - lastShuntTime >= shuntInterval && shuntTimeout) && shuntActionDone) {
       shuntTimeout = false;
       shuntActionDone = false;

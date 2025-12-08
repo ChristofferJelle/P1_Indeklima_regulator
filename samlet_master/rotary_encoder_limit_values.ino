@@ -1,18 +1,3 @@
-void InitRotaryEncoder() {
-  pinMode(CLK_PIN, INPUT_PULLUP);
-  pinMode(DT_PIN, INPUT_PULLUP);
-  pinMode(SW_PIN, INPUT_PULLUP);
-  attachInterrupt(CLK_PIN, InterruptCallback, FALLING);
-
-  prevButtonSate = digitalRead(SW_PIN);
-
-  Serial.println(prevButtonSate);
-
-  //Read the initial state of CLK
-  lastStateCLK = digitalRead(CLK_PIN);
-  currentStateCLK = digitalRead(CLK_PIN);
-}
-
 void UpdateSensorData(bool direction) {
   switch(upperLimits.currentSensorData) {
     case 'T':

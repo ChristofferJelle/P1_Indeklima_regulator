@@ -1,10 +1,3 @@
-void InitServo() {
-  servo.attach(SERVO_PIN);
-  ServoClose();
-
-  pinMode(SHUNT_PIN, INPUT);
-}
-
 void ServoClose() {
   servo.write(0);
   servoState = sweepClose;
