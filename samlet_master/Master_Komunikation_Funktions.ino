@@ -126,15 +126,6 @@ void DrawDisplay() {
   Serial.print(400 + AveragesStruct.co2);
   Serial.println(" ppm");
   Serial.println();
-
-  /*
-  for (int i = 0; i < 6; i++) {
-    if (TempIngoingStruct.id[i] < 16) { Serial.print("0"); }  // zero pad
-    Serial.print(TempIngoingStruct.id[i], HEX);
-    if (i < 5) { Serial.print(":"); }
-  }
-  Serial.println();
-  */
 }
 
 void SendCommandAllSlaves(char command) {
