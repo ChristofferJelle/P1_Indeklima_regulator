@@ -29,9 +29,9 @@ struct CO2Data {
 
 //espnow komunikations data
 struct Sensordata {
-  float temp = 120;
-  float hum = 20000;
-  float co2 = 24000;
+  float temp;
+  float hum;
+  float co2;
   uint8_t id[6];
   char command;
   int activePeersTotal;
