@@ -70,7 +70,7 @@ SensordataTp TempIngoingStruct, CommandStruct, AveragesStruct;
 
 struct PeerDataContextTp {
   esp_now_peer_info_t peerInfo;
-  Sensordata IngoingStruct;
+  struct SensordataTp IngoingStruct;
   bool isActive; //Flag to track active peers
   unsigned long lastSeenTime;
 };
