@@ -183,23 +183,33 @@ void loop() {
     }
 
     if (!shuntTimeout) {
+      float currentTemp = AveragesStruct.temp;
+      float currentHumid = AveragesStruct.hum;
+      float currentCO2 = AveragesStruct.co2;
+      const float MARGIN = 1; //can be edit trust
 
-      if (servoState == idle || servoState == sweepClose) {
-        // We are currently closed or idle. We only open if the average exceeds the upper threshold.
-        if ((AveragesStruct.temp >= (s1.Temp + HYSTERESIS_MARGIN)) || (AveragesStruct.co2 >= (s1.Humid + HYSTERESIS_MARGIN)) || (AveragesStruct.co2 >= (s1.CO2 + HYSTERESIS_MARGIN))) {
+      //Check if we MUST OPEN due to HIGH/DANGEROUS conditions (s1 upper limit + margin)
+      bool conditionsToOpen = (currentTemp >= (s1.Temp + MARGIN)) || (currentHumid >= (s1.Humid + MARGIN)) || (currentCO2 >= (s1.CO2 + MARGIN));
+
+      //Check conditions that allow a CLOSE event (s2 lower T and s2 upper H limits)
+      bool conditionsToClose = (currentTemp <= (s2.Temp - MARGIN)) && (currentHumid >= (s2.Humid + MARGIN));
+
+
+      // --- Hysteresis State Machine ---
+      if (conditionsToOpen) {
+        if (servoState != sweepOpen) {
           ServoOpen();
         }
       } else {
-        ServoClose();
-      }
 
-      if (servoState == sweepOpen) {
-        // We are currently open. We only close if any averages drop below the lower threshold.
-        if ((AveragesStruct.temp < (s2.Temp - HYSTERESIS_MARGIN)) || (AveragesStruct.co2 < (s2.Humid - HYSTERESIS_MARGIN)) || (AveragesStruct.co2 < (s2.CO2 - HYSTERESIS_MARGIN))) {
-          ServoClose();
+        if (conditionsToClose) {
+          if (servoState != sweepClose && servoState != idle) {
+            ServoClose();
+          }
         }
       }
     }
+
 
 
     if (shuntCurrent > 2.94 && !shuntTimeout) {
