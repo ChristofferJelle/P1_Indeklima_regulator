@@ -20,7 +20,7 @@ struct SensordataTp {
   char command;
   int activePeers;
 };
-struct SensordataTp TemporaryIngoingStruct, CommandStruct, AveragesStruct;
+struct SensordataTp temporaryIngoingStruct, commandStruct, averagesStruct;
 
 struct PeerDataTp {
   esp_now_peer_info_t peerInfo;
@@ -133,13 +133,13 @@ void loop() {
     if (millis() - lastRefresh >= dataRequestInterval) {
       PruneUnresponsivePeers();
       SendCommandAllSlaves('S');
-      CalculateAverage(&AveragesStruct);
+      CalculateAverage(&averagesStruct);
       DrawDisplay();
       lastRefresh = millis();
     }
 
     if (!shuntTimeout) {
-      if ((AveragesStruct.temp >= upperLimits.temp || AveragesStruct.humid >= upperLimits.humid) || AveragesStruct.co2 >= upperLimits.co2) {
+      if ((averagesStruct.temp >= upperLimits.temp || averagesStruct.humid >= upperLimits.humid) || averagesStruct.co2 >= upperLimits.co2) {
         ServoOpen();
       } else {
         ServoClose();

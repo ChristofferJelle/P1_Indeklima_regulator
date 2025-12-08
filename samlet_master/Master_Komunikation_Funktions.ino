@@ -1,12 +1,12 @@
 // Callback when data is received
 void OnDataReceived(const uint8_t* mac, const uint8_t* incomingData) {
-  memcpy(&TemporaryIngoingStruct, incomingData, sizeof(TemporaryIngoingStruct));
+  memcpy(&temporaryIngoingStruct, incomingData, sizeof(temporaryIngoingStruct));
   // The condition reads: "If the first 6 bytes of peerInfo are NOT equal to the first 6 bytes of IngoingStruct.id"
-  if (CheckArrayList(TemporaryIngoingStruct) >= 0) {
+  if (CheckArrayList(temporaryIngoingStruct) >= 0) {
     //Serial.println("Peer already registered");
 
     for (int i = 0; i < 10; i++) {
-      int IDIndexMatch = CheckArrayList(TemporaryIngoingStruct);
+      int IDIndexMatch = CheckArrayList(temporaryIngoingStruct);
       if (IDIndexMatch >= 0) {
         memcpy(&peersArr[IDIndexMatch].IngoingStruct, incomingData, sizeof(peersArr[IDIndexMatch].IngoingStruct));
         // Update peer last seen time
@@ -16,7 +16,7 @@ void OnDataReceived(const uint8_t* mac, const uint8_t* incomingData) {
     }
   } else {
     Serial.println("who tf are you, get in here");
-    RegisterPeers(TemporaryIngoingStruct);
+    RegisterPeers(temporaryIngoingStruct);
   }
 }
 
@@ -68,8 +68,8 @@ void RegisterPeers(struct SensordataTp MacToAdd) {
   if (esp_now_add_peer(&peersArr[tempIndex].peerInfo) == ESP_OK) {
     Serial.println("Peer added successfully");
     peersArr[tempIndex].isActive = true;
-    CommandStruct.command = 'C';  //command for connection confirmed
-    esp_now_send(peersArr[tempIndex].peerInfo.peer_addr, (uint8_t*)&CommandStruct, sizeof(CommandStruct));
+    commandStruct.command = 'C';  //command for connection confirmed
+    esp_now_send(peersArr[tempIndex].peerInfo.peer_addr, (uint8_t*)&commandStruct, sizeof(commandStruct));
   } else {
     Serial.print("Failed to add peer Error code: ");
     Serial.println(esp_now_add_peer(&peersArr[tempIndex].peerInfo));
@@ -94,42 +94,42 @@ void DrawDisplay() {
 
   tft.setCursor(0, 30);
   tft.print("Temp: ");
-  tft.print(AveragesStruct.temp, 1); //1 decimal place
+  tft.print(averagesStruct.temp, 1); //1 decimal place
   tft.println(" C");
 
   tft.setCursor(0, 60);
   tft.print("Humid: ");
-  tft.print(AveragesStruct.humid);
+  tft.print(averagesStruct.humid);
   tft.println(" %");
 
   tft.setCursor(0, 90);
   tft.print("CO2: ");
-  tft.print(400 + AveragesStruct.co2);
+  tft.print(427 + averagesStruct.co2); //427 is for calibration
   tft.println(" ppm");
 
   tft.setCursor(0, 120);
   tft.print("Connected Peers: ");
-  tft.print(AveragesStruct.activePeers);
+  tft.print(averagesStruct.activePeers);
 
   //serial output remains the same
   Serial.println("INCOMING READINGS");
   Serial.print("Temperature: ");
-  Serial.print(AveragesStruct.temp);
+  Serial.print(averagesStruct.temp);
   Serial.println(" °C");
   Serial.print("Humidity: ");
-  Serial.print(AveragesStruct.humid);
+  Serial.print(averagesStruct.humid);
   Serial.println(" %");
   Serial.print("Pressure: ");
-  Serial.print(400 + AveragesStruct.co2);
+  Serial.print(400 + averagesStruct.co2);
   Serial.println(" ppm");
   Serial.println();
 }
 
 void SendCommandAllSlaves(char command) {
-  CommandStruct.command = command; //command for sending the data confirmed
+  commandStruct.command = command; //command for sending the data confirmed
 
   for (int i = 0; i < 10; i++) {
-    esp_now_send(peersArr[i].peerInfo.peer_addr, (uint8_t*)&CommandStruct, sizeof(TemporaryIngoingStruct));
+    esp_now_send(peersArr[i].peerInfo.peer_addr, (uint8_t*)&commandStruct, sizeof(temporaryIngoingStruct));
   }
 }
 
@@ -166,9 +166,9 @@ void PruneUnresponsivePeers() {
     && (currentTime - TIMEOUT_MS > peersArr[i].lastSeenTime)) { //if peer has timed out
       Serial.println("Peer timed out. Sending reset-command and removing.");
 
-      CommandStruct.command = 'R';
-      esp_now_send(peersArr[i].peerInfo.peer_addr, (uint8_t*)&CommandStruct, sizeof(CommandStruct));
-      CommandStruct.command = ' '; //reset command after sending
+      commandStruct.command = 'R';
+      esp_now_send(peersArr[i].peerInfo.peer_addr, (uint8_t*)&commandStruct, sizeof(commandStruct));
+      commandStruct.command = ' '; //reset command after sending
 
       //remove the peer using the ESP-NOW library function
       esp_now_del_peer(peersArr[i].peerInfo.peer_addr);
