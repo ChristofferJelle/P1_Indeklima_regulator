@@ -33,7 +33,7 @@ void ReadEncoder() {
     ++ButtonPresses;
     // GO INTO TIMEOUT STATE LITTERLY JUST SO THE DISPLAY CHANGES
     rotaryLastRefresh = millis();
-    rotaryEncoderState = TIMEOUT;
+    rotaryEncoderState = timeout;
     switch (ButtonPresses) {
       case 1:
         s1.CurrentSensorData = 'H';
@@ -85,8 +85,8 @@ void DrawLimitValues() {
 }
 
 void InterruptCallback() {
-  if (rotaryEncoderState != TIMEOUT && millis() - rotaryLastRefresh >= rotaryRefreshInterval) {
+  if (rotaryEncoderState != timeout && millis() - rotaryLastRefresh >= rotaryRefreshInterval) {
     rotaryLastRefresh = millis();
-    rotaryEncoderState = TIMEOUT;
+    rotaryEncoderState = timeout;
   }
 }

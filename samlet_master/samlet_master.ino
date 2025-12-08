@@ -4,11 +4,11 @@
 #include <esp_wifi.h>
 
 //remember to edit library header files https://jensd.dk/doc/esp32/esp32s3.html
-#include <TFT_eSPI.h>  // LILYGO T-Display library
+#include <TFT_eSPI.h> // LILYGO T-Display library
 #include <SPI.h>
 
-//serva
-#include <ESP32Servo.h>  //library for servo
+//servo
+#include <ESP32Servo.h> //library for servo
 const int servoPin = 17;
 
 Servo servo;  //create servo object
@@ -24,34 +24,33 @@ const unsigned long shuntInterval = 1000;
 bool shuntTimeout = false;
 bool shuntActionDone = false;
 
-
 TFT_eSPI tft = TFT_eSPI();  // Create TFT object
 #define BUTTON_PIN 35
 
 //Rotary encoder:
-#define CLK_PIN 37  //1st click
-#define DT_PIN 38   //2nd click
-#define SW_PIN 39   //button click
-bool interupt = false;
+#define CLK_PIN 37 //1st click
+#define DT_PIN 38 //2nd click
+#define SW_PIN 39 //button click
+bool interrupt = false;
 
-struct SensorDataLimit {
+struct SensorDataLimitTp {
   long Temp = 30;
   long Humid = 50;
   long CO2 = 600;
   char CurrentSensorData = 'T';
 };
-struct SensorDataLimit s1;
+struct SensorDataLimitTp s1;
 
 enum RotaryEncoderStateTp {
-  IDLESTATE,
-  TIMEOUT
+  idle,
+  timeout
 };
-RotaryEncoderStateTp rotaryEncoderState = IDLESTATE;
+RotaryEncoderStateTp rotaryEncoderState = idle;
 int currentStateCLK;
 int lastStateCLK;
 unsigned long rotaryLastRefresh = 0;
 unsigned long limitDisplayLastRefresh = 0;
-const unsigned long limitDisplayrefreshInterval = 100;
+const unsigned long limitDisplayRefreshInterval = 100;
 const unsigned long rotaryRefreshInterval = 1100;
 
 int prevButtonSate;
@@ -69,13 +68,13 @@ struct SensordataTp {
 // Create a struct to hold sensor readings
 SensordataTp TempIngoingStruct, CommandStruct, AveragesStruct;
 
-struct PeerDataContext {
+struct PeerDataContextTp {
   esp_now_peer_info_t peerInfo;
   Sensordata IngoingStruct;
   bool isActive; //Flag to track active peers
   unsigned long lastSeenTime;
 };
-PeerDataContext Peers[10];
+PeerDataContextTp Peers[10];
 unsigned long lastRefresh = 0;
 const unsigned long refreshInterval = 4000;
 
@@ -127,13 +126,13 @@ void loop() {
   ReadEncoder();
   unsigned long timeNow = millis();
   if (timeNow - rotaryLastRefresh >= rotaryRefreshInterval) {
-    rotaryEncoderState = IDLESTATE;
-  } else if (rotaryEncoderState == TIMEOUT && timeNow - limitDisplayLastRefresh >= limitDisplayrefreshInterval) {
+    rotaryEncoderState = idle;
+  } else if (rotaryEncoderState == timeout && timeNow - limitDisplayLastRefresh >= limitDisplayRefreshInterval) {
     DrawLimitValues();
     limitDisplayLastRefresh = timeNow;
   }
 
-  if (rotaryEncoderState != TIMEOUT) {
+  if (rotaryEncoderState != timeout) {
     int buttonState = digitalRead(BUTTON_PIN);
     if (buttonState == LOW) {
       Serial.println("Button pressed!");
