@@ -168,7 +168,7 @@ void SendCommandAllSlaves(char command) {
 }
 
 //calculates the average by using the varriables stored in Sensordata stuct (likely the AveragesStruct)
-void CalculateAverage(Sensordata* resultStruct) {
+void CalculateAverage(struct Sensordata* resultStruct) {
   resultStruct->temp = 0;
   resultStruct->hum = 0;
   resultStruct->co2 = 0;
