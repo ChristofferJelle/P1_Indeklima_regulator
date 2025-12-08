@@ -17,8 +17,8 @@ void UpdateSensorData(bool direction) {
   switch (s1.CurrentSensorData) {
     case 'T':
       s1.Temp += direction ? -1 : 1;
-      Serial.print("Temp: ");
-      Serial.println(s1.Temp);
+      //Serial.print("Temp: ");
+      //Serial.println(s1.Temp);
       break;
     case 'H':
       s1.Humid += direction ? -1 : 1;

@@ -41,7 +41,7 @@ struct SensorDataLimitTp {
   long Temp = 25;
   long Humid = 60;
   long CO2 = 800;
-  char CurrentSensorData = 'T';
+  char CurrentSensorData = 'T'; //can be 'T', 'H', or 'C'
 };
 struct SensorDataLimitTp s1;
 
@@ -50,6 +50,7 @@ enum RotaryEncoderStateTp {
   timeout
 };
 RotaryEncoderStateTp rotaryEncoderState = idleState;
+
 int currentStateCLK;
 int lastStateCLK;
 unsigned long rotaryLastRefresh = 0;
