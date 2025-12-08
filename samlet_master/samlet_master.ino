@@ -6,32 +6,38 @@
 //remember to edit library header files https://jensd.dk/doc/esp32/esp32s3.html
 #include <TFT_eSPI.h> // LILYGO T-Display library
 #include <SPI.h>
+TFT_eSPI tft = TFT_eSPI(); //Create TFT object
 
-//servo
+//------------------------------------------------------------------------------
+//servo:
 #include <ESP32Servo.h> //library for servo
-const int servoPin = 17;
+#define SERVO_PIN 17
 
-Servo servo;  //create servo object
+Servo servo; //create servo object
+
 enum ServoStateTp {
   sweepOpen,
   sweepClose,
   idle //triggered by shunt hit
 };
 ServoStateTp servoState = sweepClose;
+
 #define SHUNT_PIN 32
 unsigned long lastShuntTime = 0;
 const unsigned long shuntInterval = 1000;
 bool shuntTimeout = false;
 bool shuntActionDone = false;
 
-TFT_eSPI tft = TFT_eSPI();  // Create TFT object
 #define BUTTON_PIN 35
 
-//Rotary encoder:
+//------------------------------------------------------------------------------
+//rotary encoder:
 #define CLK_PIN 37 //1st click
 #define DT_PIN 38 //2nd click
 #define SW_PIN 39 //button click
+
 bool interrupt = false;
+
 //lower limit values need to be temp 15 and humid 30%
 struct SensorDataLimitTp {
   long Temp = 25;
@@ -86,10 +92,9 @@ void setup() {
   Serial.println();
 
   InitDisplay();
+  InitESP_NOW();
 
-  InitESP32_NOW();
-
-  //i could also just do Serial.println(WiFi.macAddress()); i guess, but this is cooler
+  //could also just do Serial.println(WiFi.macAddress());, but this is cooler
   Serial.print("[DEFAULT] ESP32 Board MAC Address: ");
   uint8_t* ownMac = ReadMacAddress();
   //converts array into a string.
@@ -104,26 +109,13 @@ void setup() {
     Serial.println(ownMacHex);
   }
 
-  //rotary encoder:
-  pinMode(CLK_PIN, INPUT_PULLUP);
-  pinMode(DT_PIN, INPUT_PULLUP);
-  pinMode(SW_PIN, INPUT_PULLUP);
-
-  attachInterrupt(CLK_PIN, InterruptCallback, FALLING);
-
-  prevButtonSate = digitalRead(SW_PIN);
-
-  Serial.println(prevButtonSate);
-  // Read the initial state of CLK
-  lastStateCLK = digitalRead(CLK_PIN);
-  currentStateCLK = digitalRead(CLK_PIN);
-  //servo:
-  servo.attach(servoPin);
-  ServoClose();
+  InitRotaryEncoder();
+  InitServo();
 }
 
 void loop() {
   ReadEncoder();
+
   unsigned long timeNow = millis();
   if (timeNow - rotaryLastRefresh >= rotaryRefreshInterval) {
     rotaryEncoderState = idleState;

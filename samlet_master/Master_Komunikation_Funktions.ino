@@ -1,14 +1,14 @@
 void InitDisplay() {
-  //initialise lillygo screen
+  //initialise lilygo screen
   tft.init();
-  tft.setRotation(1);  // landscape mode
+  tft.setRotation(1); //landscape mode
   tft.fillScreen(TFT_BLACK);
   tft.setTextColor(TFT_WHITE);
-  tft.setTextSize(2);  // scale text
+  tft.setTextSize(2); //scale text
 }
 
-//initialise everything that has to do with setting up ESPNOW library
-void InitESP32_NOW() {
+//initialise + set-up ESP_NOW library
+void InitESP_NOW() {
   //initialises what kinda wifi mode its in, rn its in accese point mode, so i dont have to connect to uni wifi with own student password.
   WiFi.mode(WIFI_STA);
 
