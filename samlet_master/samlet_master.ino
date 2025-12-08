@@ -53,6 +53,14 @@ unsigned long limitDisplayLastRefresh = 0;
 const unsigned long limitDisplayRefreshInterval = 100;
 const unsigned long rotaryRefreshInterval = 1100;
 
+enum ScreenStateTp {
+  main,
+  upperLimitValue,
+  lowerLimitValue
+};
+ScreenStateTp screenStateTp = main;
+int switchMenuPin = 0;
+
 int prevButtonSate;
 unsigned int ButtonPresses = 0;
 
