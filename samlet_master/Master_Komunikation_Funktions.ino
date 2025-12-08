@@ -132,31 +132,32 @@ void SendCommandAllSlaves(char command) {
   CommandStruct.command = command; //command for sending the data confirmed
 
   for (int i = 0; i < 10; i++) {
-    esp_now_send(peersArr[i].peerInfo.peer_addr, (uint8_t*)&CommandStruct, sizeof(TempIngoingStruct));
+    esp_now_send(peersArr[i].peerInfo.peer_addr, (uint8_t*)&CommandStruct, sizeof(TemporaryIngoingStruct));
   }
 }
 
-//calculates the average by using the varriables stored in Sensordata stuct (likely the AveragesStruct)
+//calculates the average by using the variables stored in SensordataTp struct
 void CalculateAverage(struct SensordataTp* resultStruct) {
+  //reset values of resultStruct
   resultStruct->temp = 0;
   resultStruct->humid = 0;
   resultStruct->co2 = 0;
   resultStruct->activePeersTotal = 0;
-  int activePeersTotal = 0;
 
-  for (int i = 0; i < 10; i++) {
-    if (peersArr[i].isActive == true) {
+  int activePeers = 0;
+  for(int i = 0; i < maxPeers; i++) {
+    if(peersArr[i].isActive) {
       resultStruct->temp += peersArr[i].IngoingStruct.temp;
       resultStruct->humid += peersArr[i].IngoingStruct.humid;
       resultStruct->co2 += peersArr[i].IngoingStruct.co2;
-      activePeersTotal++; 
+      activePeers++; 
     }
   }
-  resultStruct->temp /= activePeersTotal;
-  resultStruct->humid /= activePeersTotal;
-  resultStruct->co2 /= activePeersTotal;
-  resultStruct->activePeersTotal = activePeersTotal;
-  Serial.println(activePeersTotal);
+  resultStruct->temp /= activePeers;
+  resultStruct->humid /= activePeers;
+  resultStruct->co2 /= activePeers;
+  resultStruct->activePeersTotal = activePeers;
+  Serial.println(activePeers);
 }
 
 //sets a time on every incomeing sensordata peer to keep track of when that peer was last seen,

@@ -28,7 +28,8 @@ struct PeerDataTp {
   bool isActive; //flag to track active peers
   unsigned long lastSeenTime;
 };
-struct PeerDataTp peersArr[10];
+const int maxPeers = 10;
+struct PeerDataTp peersArr[maxPeers];
 
 unsigned long lastRefresh = 0;
 const unsigned long refreshInterval = 4000;
