@@ -129,7 +129,7 @@ void DrawDisplay() {
 
   tft.setCursor(0, 90);
   tft.print("CO2: ");
-  tft.print(AveragesStruct.co2, 1);
+  tft.print(400 + AveragesStruct.co2, 1);
   tft.println(" ppm");
 
   tft.setCursor(0, 120);
@@ -145,7 +145,7 @@ void DrawDisplay() {
   Serial.print(AveragesStruct.hum);
   Serial.println(" %");
   Serial.print("Pressure: ");
-  Serial.print(AveragesStruct.co2);
+  Serial.print(400 + AveragesStruct.co2);
   Serial.println(" ppm");
   Serial.println();
 

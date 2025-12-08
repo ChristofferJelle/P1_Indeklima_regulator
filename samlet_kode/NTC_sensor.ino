@@ -38,7 +38,7 @@ float NTCRead(bool tempstate) {
   //Serial.print(tempC);  //calculate temperature in C
 
   if (tempstate) {
-    return tempC;
+    return tempC-2;
   }
-  return tempK;
+  return tempK-2;
 }

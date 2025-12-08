@@ -32,11 +32,11 @@ TFT_eSPI tft = TFT_eSPI();  // Create TFT object
 #define DT_PIN 38 //2nd click
 #define SW_PIN 39 //button click
 bool interrupt = false;
-
+//lower limit values need to be temp 15 and humid 30%
 struct SensorDataLimitTp {
-  long Temp = 30;
-  long Humid = 50;
-  long CO2 = 600;
+  long Temp = 25;
+  long Humid = 60;
+  long CO2 = 800;
   char CurrentSensorData = 'T';
 };
 struct SensorDataLimitTp s1;
