@@ -20,11 +20,11 @@ struct SensordataTp {
   char command;
   int activePeers;
 };
-struct SensordataTp temporaryIngoingStruct, commandStruct, averagesStruct;
+struct SensordataTp temporaryIncomingStruct, commandStruct, averagesStruct;
 
 struct PeerDataTp {
   esp_now_peer_info_t peerInfo;
-  struct SensordataTp IngoingStruct;
+  struct SensordataTp incomingStruct;
   bool isActive; //flag to track active peers
   unsigned long lastSeenTime;
 };
@@ -95,7 +95,7 @@ void setup() {
 
   //could also just do Serial.println(WiFi.macAddress());, but this is cooler
   Serial.print("[DEFAULT] ESP32 Board MAC Address: ");
-  uint8_t* ownMac = ReadMacAddress();
+  uint8_t* ownMac = ReadOwnMacAddress();
   //convert array into a string
   if (ownMac != nullptr) {
     String ownMacHex;

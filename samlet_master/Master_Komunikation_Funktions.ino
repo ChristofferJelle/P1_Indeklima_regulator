@@ -1,84 +1,66 @@
-// Callback when data is received
+//callback function for when data is received
 void OnDataReceived(const uint8_t* mac, const uint8_t* incomingData) {
-  memcpy(&temporaryIngoingStruct, incomingData, sizeof(temporaryIngoingStruct));
-  // The condition reads: "If the first 6 bytes of peerInfo are NOT equal to the first 6 bytes of IngoingStruct.id"
-  if (CheckArrayList(temporaryIngoingStruct) >= 0) {
-    //Serial.println("Peer already registered");
+  memcpy(&temporaryIncomingStruct, incomingData, sizeof(temporaryIncomingStruct));
 
-    for (int i = 0; i < 10; i++) {
-      int IDIndexMatch = CheckArrayList(temporaryIngoingStruct);
-      if (IDIndexMatch >= 0) {
-        memcpy(&peersArr[IDIndexMatch].IngoingStruct, incomingData, sizeof(peersArr[IDIndexMatch].IngoingStruct));
-        // Update peer last seen time
-        peersArr[IDIndexMatch].lastSeenTime = millis();
-        break;
-      }
+  if(CheckPeerId(temporaryIncomingStruct.id) >= 0) { //if peer is already registered
+    for(int i = 0; i < maxPeers; i++) {
+      int indexNumber = CheckPeerId(temporaryIncomingStruct.id);
+
+      memcpy(&peersArr[indexNumber].incomingStruct, incomingData, sizeof(peersArr[indexNumber].incomingStruct));
+      peersArr[indexNumber].lastSeenTime = millis(); //update peer's last seen time
+      break;
     }
   } else {
-    Serial.println("who tf are you, get in here");
-    RegisterPeers(temporaryIngoingStruct);
+    Serial.println("New peer detected. Adds to list of peers.");
+    RegisterPeer(temporaryIncomingStruct.id);
   }
 }
 
-// funktion to check arraylist if any of its arrays contain the incomeing macaddress
-int CheckArrayList(struct SensordataTp MacToCheck) {
+//check whether any registered peer has the incoming MAC-address
+int CheckPeerId(uint8_t MacToCheck[6]) {
   for (int i = 0; i < 10; i++) {
-    if (memcmp(MacToCheck.id, peersArr[i].peerInfo.peer_addr, sizeof(peersArr[i].peerInfo.peer_addr)) == 0) {
+    if (memcmp(MacToCheck, peersArr[i].peerInfo.peer_addr, sizeof(peersArr[i].peerInfo.peer_addr)) == 0) {
       return i;
     }
   }
   return -1;
 }
 
-//this funktion just uses a funktion to get the mac address and then returns it....and checks if it actually got it
-uint8_t* ReadMacAddress() {
-  static uint8_t baseMac[6];
-  esp_err_t ret = esp_wifi_get_mac(WIFI_IF_STA, baseMac);
-  if (ret == ESP_OK) {
-    return baseMac;
-  } else {
-    Serial.println("Failed to read MAC address");
-    return nullptr;
-  }
-}
-
 //used in OnDataRecieved() function to register unregistered peers
-void RegisterPeers(struct SensordataTp newPeerStruct) {
+void RegisterPeer(uint8_t newMac[6]) {
   const uint8_t EMPTY_MAC_ADDRESS[] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00}; //uint8_t because only the last 2 digits are used
 
   //loop until empty spot in array is found
   for (int i = 0; i < maxPeers; i++) {
     if (memcmp(&peersArr[i].peerInfo.peer_addr, EMPTY_MAC_ADDRESS, sizeof(peersArr[i].peerInfo.peer_addr)) == 0) { //check whether the 2 are equal
-      int index = i;
-      break;
+      //overwrite empty spot in peersArr with the new MAC-address
+      memcpy(&peersArr[i].peerInfo.peer_addr, newMac, sizeof(peersArr[i].peerInfo.peer_addr));
+
+      peersArr[i].peerInfo.channel = 0; //use same Wi-Fi channel as station (aka main)
+      peersArr[i].peerInfo.encrypt = false; //no encryption
+
+      Serial.println("Peer MAC:");
+      PrintAddressOfPeer(peersArr[i].peerInfo.peer_addr);
+
+      //check whether connection was a success
+      if(esp_now_add_peer(&peersArr[i].peerInfo) == ESP_OK) {
+        Serial.println("Peer added successfully.");
+        peersArr[i].isActive = true;
+        commandStruct.command = 'C'; //command for connection confirmed
+        esp_now_send(peersArr[i].peerInfo.peer_addr, (uint8_t*)&commandStruct, sizeof(commandStruct)); //send confirmation to slave
+      } else {
+        Serial.print("Failed to add peer. Error code: ");
+        Serial.println(esp_now_add_peer(&peersArr[i].peerInfo));
+      }
     }
-  }
-  //overwrite empty spot in the peersArr with the new MAC-address
-  memcpy(&peersArr[index].peerInfo.peer_addr, newPeerStruct.id, sizeof(peersArr[index].peerInfo.peer_addr));
-
-  peersArr[index].peerInfo.channel = 0; //use same Wi-Fi channel as station (aka main)
-  peersArr[index].peerInfo.encrypt = false; //no encryption
-
-  Serial.println("Peer MAC:");
-  PrintAddressOfPeer(peersArr[index].peerInfo.peer_addr);
-
-  //check whether connection was a success
-  if(esp_now_add_peer(&peersArr[index].peerInfo) == ESP_OK) {
-    Serial.println("Peer added successfully.");
-    peersArr[index].isActive = true;
-    commandStruct.command = 'C'; //command for connection confirmed
-    esp_now_send(peersArr[index].peerInfo.peer_addr, (uint8_t*)&commandStruct, sizeof(commandStruct)); //send confirmation to slave
-  } else {
-    Serial.print("Failed to add peer. Error code: ");
-    Serial.println(esp_now_add_peer(&peersArr[index].peerInfo));
   }
 }
 
 //format the MAC-address into hexcode (the standard way of displaying MAC-addresses)
-void PrintAddressOfPeer(uint8_t peerMAC[]) {
+void PrintAddressOfPeer(uint8_t peerMac[]) {
   for (int i = 0; i < 6; i++) {
-    if (peerMAC[i] < 16) {Serial.print("0");} //zero pad 
-    Serial.print(peerMAC[i], HEX);
+    if (peerMac[i] < 16) {Serial.print("0");} //zero pad 
+    Serial.print(peerMac[i], HEX);
     if (i < 5) {Serial.print(":");} //print ':' between each number in address
   }
 }
@@ -129,9 +111,9 @@ void CalculateAverage(struct SensordataTp* resultStruct) {
   int activePeersTotal = 0;
   for(int i = 0; i < maxPeers; i++) {
     if(peersArr[i].isActive) {
-      resultStruct->temp += peersArr[i].IngoingStruct.temp;
-      resultStruct->humid += peersArr[i].IngoingStruct.humid;
-      resultStruct->co2 += peersArr[i].IngoingStruct.co2;
+      resultStruct->temp += peersArr[i].incomingStruct.temp;
+      resultStruct->humid += peersArr[i].incomingStruct.humid;
+      resultStruct->co2 += peersArr[i].incomingStruct.co2;
       activePeersTotal++; 
     }
   }
@@ -141,7 +123,7 @@ void CalculateAverage(struct SensordataTp* resultStruct) {
   resultStruct->activePeers = activePeersTotal;
 }
 
-//if slave has not been seen in a while, remove it, set its mac-adress spot in peersArr to 0, and restart the peer (slave)
+//if slave has not been seen in a while, remove it, set its mac-adsress spot in peersArr to 0, and restart the peer (slave)
 void PruneUnresponsivePeers() {
   unsigned long currentTime = millis();
   const unsigned long TIMEOUT_MS = dataRequestInterval + 2000; //peers has 2 seconds to respond before being pruned
@@ -161,7 +143,7 @@ void PruneUnresponsivePeers() {
 
       //clear address
       const uint8_t EMPTY_MAC_ADDRESS[] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00}; //uint8_t because only the last 2 digits are used
-      memcpy(&peersArr[i].peerInfo.peer_addr, EMPTY_MAC_ADDRESS, sizeof(EMPTY_MAC_ADDRESS));
+      memcpy(&peersArr[i].peerInfo.peer_addr, EMPTY_MAC_ADDRESS, sizeof(peersArr[i].peerInfo.peer_addr));
     }
   }
 }
