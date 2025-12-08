@@ -124,7 +124,7 @@ void DrawDisplay() {
 
   tft.setCursor(0, 60);
   tft.print("Humid: ");
-  tft.print(AveragesStruct.hum);
+  tft.print(AveragesStruct.humid);
   tft.println(" %");
 
   tft.setCursor(0, 90);
@@ -140,9 +140,9 @@ void DrawDisplay() {
   Serial.println("INCOMING READINGS");
   Serial.print("Temperature: ");
   Serial.print(AveragesStruct.temp);
-  Serial.println(" ºC");
+  Serial.println(" °C");
   Serial.print("Humidity: ");
-  Serial.print(AveragesStruct.hum);
+  Serial.print(AveragesStruct.humid);
   Serial.println(" %");
   Serial.print("Pressure: ");
   Serial.print(400 + AveragesStruct.co2);
@@ -170,7 +170,7 @@ void SendCommandAllSlaves(char command) {
 //calculates the average by using the varriables stored in Sensordata stuct (likely the AveragesStruct)
 void CalculateAverage(struct SensordataTp* resultStruct) {
   resultStruct->temp = 0;
-  resultStruct->hum = 0;
+  resultStruct->humid = 0;
   resultStruct->co2 = 0;
   resultStruct->activePeersTotal = 0;
   int activePeersTotal = 0;
@@ -178,13 +178,13 @@ void CalculateAverage(struct SensordataTp* resultStruct) {
   for (int i = 0; i < 10; i++) {
     if (peersArr[i].isActive == true) {
       resultStruct->temp += peersArr[i].IngoingStruct.temp;
-      resultStruct->hum += peersArr[i].IngoingStruct.hum;
+      resultStruct->humid += peersArr[i].IngoingStruct.humid;
       resultStruct->co2 += peersArr[i].IngoingStruct.co2;
       activePeersTotal++; 
     }
   }
   resultStruct->temp /= activePeersTotal;
-  resultStruct->hum /= activePeersTotal;
+  resultStruct->humid /= activePeersTotal;
   resultStruct->co2 /= activePeersTotal;
   resultStruct->activePeersTotal = activePeersTotal;
   Serial.println(activePeersTotal);

@@ -12,7 +12,7 @@ TFT_eSPI tft = TFT_eSPI(); //Create TFT object
 
 struct SensordataTp {
   float temp;
-  float hum;
+  float humid;
   float co2;
   uint8_t id[6];
   char command;
@@ -143,7 +143,7 @@ void loop() {
     }
 
     if (!shuntTimeout) {
-      if ((AveragesStruct.temp >= s1.Temp || AveragesStruct.hum >= s1.Humid) || AveragesStruct.co2 >= s1.CO2) {
+      if ((AveragesStruct.temp >= s1.Temp || AveragesStruct.humid >= s1.Humid) || AveragesStruct.co2 >= s1.CO2) {
         ServoOpen();
       } else {
         ServoClose();
