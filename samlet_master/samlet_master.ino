@@ -152,9 +152,9 @@ void loop() {
     // Vi er i timeout-tilstand → skriv servo-position
     if (shuntTimeout && !shuntActionDone) {
       if (servoState == sweepOpen) {
-        servoClose();
+        ServoClose();
       } else if (servoState == sweepClose) {
-        servoOpen();
+        ServoOpen();
       }
       lastShuntTime = millis();
       shuntActionDone = true;

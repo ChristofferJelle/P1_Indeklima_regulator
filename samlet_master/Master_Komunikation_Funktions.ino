@@ -1,5 +1,5 @@
 // Callback when data is received
-void OnDataReceived(const uint8_t* mac, const uint8_t* incomingData, int len) {
+void OnDataReceived(const uint8_t* mac, const uint8_t* incomingData) {
   memcpy(&TempIngoingStruct, incomingData, sizeof(TempIngoingStruct));
   // The condition reads: "If the first 6 bytes of peerInfo are NOT equal to the first 6 bytes of IngoingStruct.id"
   if (CheckArrayList(TempIngoingStruct) >= 0) {
