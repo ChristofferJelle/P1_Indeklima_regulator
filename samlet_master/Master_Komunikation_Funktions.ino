@@ -42,45 +42,45 @@ uint8_t* ReadMacAddress() {
   }
 }
 
-//funktion used in recive data callback funktion to register unregisted peers
-void RegisterPeers(struct SensordataTp MacToAdd) {
-  int tempIndex;
+//used in OnDataRecieved() function to register unregistered peers
+void RegisterPeers(struct SensordataTp newPeerStruct) {
   const uint8_t EMPTY_MAC_ADDRESS[] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00}; //uint8_t because only the last 2 digits are used
-  // loop until u find a spot in the array thats empty
-  for (int i = 0; i < 10; i++) {
-    if (memcmp(&peersArr[i].peerInfo.peer_addr, EMPTY_MAC_ADDRESS, sizeof(peersArr[i].peerInfo.peer_addr)) == 0) {
-      tempIndex = i;
+
+  //loop until empty spot in array is found
+  for (int i = 0; i < maxPeers; i++) {
+    if (memcmp(&peersArr[i].peerInfo.peer_addr, EMPTY_MAC_ADDRESS, sizeof(peersArr[i].peerInfo.peer_addr)) == 0) { //check whether the 2 are equal
+      int index = i;
       break;
     } else {
       continue;
     }
   }
-  //then overwrite that empty spot in the array with the mac-address to add
-  memcpy(&peersArr[tempIndex].peerInfo.peer_addr, MacToAdd.id, sizeof(peersArr[tempIndex].peerInfo.peer_addr));
+  //overwrite empty spot in the peersArr with the new MAC-address
+  memcpy(&peersArr[index].peerInfo.peer_addr, newPeerStruct.id, sizeof(peersArr[index].peerInfo.peer_addr));
 
-  peersArr[tempIndex].peerInfo.channel = 0;
-  peersArr[tempIndex].peerInfo.encrypt = false;
+  peersArr[index].peerInfo.channel = 0; //use same Wi-Fi channel as station (aka main)
+  peersArr[index].peerInfo.encrypt = false; //no encryption
 
   Serial.println("Peer MAC:");
-  PrintAddressOfPeer(peersArr[tempIndex].peerInfo.peer_addr);
+  PrintAddressOfPeer(peersArr[index].peerInfo.peer_addr);
 
-  //code for checking if the connection was a success, if it was then it send the confirmation back the slave
-  if (esp_now_add_peer(&peersArr[tempIndex].peerInfo) == ESP_OK) {
-    Serial.println("Peer added successfully");
-    peersArr[tempIndex].isActive = true;
-    commandStruct.command = 'C';  //command for connection confirmed
-    esp_now_send(peersArr[tempIndex].peerInfo.peer_addr, (uint8_t*)&commandStruct, sizeof(commandStruct));
+  //check whether connection was a success
+  if(esp_now_add_peer(&peersArr[index].peerInfo) == ESP_OK) {
+    Serial.println("Peer added successfully.");
+    peersArr[index].isActive = true;
+    commandStruct.command = 'C'; //command for connection confirmed
+    esp_now_send(peersArr[index].peerInfo.peer_addr, (uint8_t*)&commandStruct, sizeof(commandStruct)); //send confirmation to slave
   } else {
-    Serial.print("Failed to add peer Error code: ");
-    Serial.println(esp_now_add_peer(&peersArr[tempIndex].peerInfo));
+    Serial.print("Failed to add peer. Error code: ");
+    Serial.println(esp_now_add_peer(&peersArr[index].peerInfo));
   }
 }
 
-//format the mac-address into hexcode (the standard way of displaying mac-addresses)
-void PrintAddressOfPeer(uint8_t peerInfoMAC[]) {
+//format the MAC-address into hexcode (the standard way of displaying MAC-addresses)
+void PrintAddressOfPeer(uint8_t peerMAC[]) {
   for (int i = 0; i < 6; i++) {
-    if (peerInfoMAC[i] < 16) {Serial.print("0");} //zero pad 
-    Serial.print(peerInfoMAC[i], HEX);
+    if (peerMAC[i] < 16) {Serial.print("0");} //zero pad 
+    Serial.print(peerMAC[i], HEX);
     if (i < 5) {Serial.print(":");} //print ':' between each number in address
   }
 }
@@ -93,14 +93,14 @@ void DrawDisplay() {
   tft.println("INCOMING READINGS");
 
   tft.setCursor(0, 30);
-  tft.print("Temp: ");
+  tft.print("Temperature: ");
   tft.print(averagesStruct.temp, 1); //1 decimal place
-  tft.println(" C");
+  tft.println(" °C");
 
   tft.setCursor(0, 60);
-  tft.print("Humid: ");
+  tft.print("Humidity: ");
   tft.print(averagesStruct.humid);
-  tft.println(" %");
+  tft.println("%");
 
   tft.setCursor(0, 90);
   tft.print("CO2: ");
@@ -113,10 +113,10 @@ void DrawDisplay() {
 }
 
 void SendCommandAllSlaves(char command) {
-  commandStruct.command = command; //command for sending the data confirmed
+  commandStruct.command = command;
 
-  for (int i = 0; i < 10; i++) {
-    esp_now_send(peersArr[i].peerInfo.peer_addr, (uint8_t*)&commandStruct, sizeof(temporaryIngoingStruct));
+  for (int i = 0; i < maxPeers; i++) {
+    esp_now_send(peersArr[i].peerInfo.peer_addr, (uint8_t*)&commandStruct, sizeof(commandStruct));
   }
 }
 
