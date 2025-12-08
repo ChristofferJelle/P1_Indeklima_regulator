@@ -34,9 +34,9 @@ TFT_eSPI tft = TFT_eSPI();  // Create TFT object
 bool interrupt = false;
 
 struct SensorDataLimitTp {
-  long Temp = 30;
-  long Humid = 50;
-  long CO2 = 600;
+  long Temp = 25;
+  long Humid = 60;
+  long CO2 = 800;
   char CurrentSensorData = 'T';
 };
 struct SensorDataLimitTp s1;
