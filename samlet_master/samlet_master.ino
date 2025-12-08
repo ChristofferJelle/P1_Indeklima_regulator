@@ -1,8 +1,10 @@
 //ESP:
 //remember to edit library header files https://jensd.dk/doc/esp32/esp32s3.html
-#include <TFT_eSPI.h> // LILYGO T-Display library
+#include <TFT_eSPI.h> //LILYGO T-Display library
 #include <SPI.h>
-TFT_eSPI tft = TFT_eSPI(); //Create TFT object
+TFT_eSPI tft = TFT_eSPI(); //create TFT object
+
+#define BUTTON_PIN 35
 
 //------------------------------------------------------------------------------
 //wireless communication:
@@ -51,8 +53,6 @@ const unsigned long shuntInterval = 1000;
 bool shuntTimeout = false;
 bool shuntActionDone = false;
 
-#define BUTTON_PIN 35
-
 //------------------------------------------------------------------------------
 //rotary encoder:
 #define CLK_PIN 37 //1st click
@@ -61,12 +61,12 @@ bool shuntActionDone = false;
 
 //lower limit values need to be temp 15 and humid 30%
 struct SensorDataLimitTp {
-  long Temp = 25;
-  long Humid = 60;
-  long CO2 = 800;
-  char CurrentSensorData = 'T'; //can be 'T', 'H', or 'C'
+  long temp = 25;
+  long humid = 60;
+  long co2 = 800;
+  char currentSensorData = 'T'; //can be 'T', 'H', or 'C'
 };
-struct SensorDataLimitTp s1;
+struct SensorDataLimitTp upperLimits;
 
 enum RotaryEncoderStateTp { //change to bool?
   idleState,
@@ -88,8 +88,7 @@ void setup() {
   Serial.begin(115200);
   pinMode(BUTTON_PIN, INPUT);
 
-  pinMode(SHUNT_PIN, INPUT);
-  Serial.println();
+  //Serial.println();
 
   InitDisplay();
   InitESP_NOW();
@@ -143,7 +142,7 @@ void loop() {
     }
 
     if (!shuntTimeout) {
-      if ((AveragesStruct.temp >= s1.Temp || AveragesStruct.humid >= s1.Humid) || AveragesStruct.co2 >= s1.CO2) {
+      if ((AveragesStruct.temp >= upperLimits.temp || AveragesStruct.humid >= upperLimits.humid) || AveragesStruct.co2 >= upperLimits.co2) {
         ServoOpen();
       } else {
         ServoClose();

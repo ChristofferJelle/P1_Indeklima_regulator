@@ -14,21 +14,15 @@ void InitRotaryEncoder() {
 }
 
 void UpdateSensorData(bool direction) {
-  switch (s1.CurrentSensorData) {
+  switch(upperLimits.currentSensorData) {
     case 'T':
-      s1.Temp += direction ? -1 : 1;
-      //Serial.print("Temp: ");
-      //Serial.println(s1.Temp);
+      upperLimits.temp += direction ? -1 : 1;
       break;
     case 'H':
-      s1.Humid += direction ? -1 : 1;
-      //Serial.print("Humidity: ");
-      //Serial.println(s1.Humid);
+      upperLimits.humid += direction ? -1 : 1;
       break;
     case 'C':
-      s1.CO2 += direction ? -1 : 1;
-      //Serial.print("CO2: ");
-      //Serial.println(s1.CO2);
+      upperLimits.co2 += direction ? -1 : 1;
       break;
   }
 }
@@ -51,17 +45,17 @@ void ReadEncoder() {
     rotaryEncoderState = timeout;
     switch (ButtonPresses) {
       case 1:
-        s1.CurrentSensorData = 'H';
-        Serial.println("set to change limit value of Humid");
+        upperLimits.currentSensorData = 'H';
+        Serial.println("set to change limit value of humid");
 
         break;
       case 2:
-        s1.CurrentSensorData = 'C';
+        upperLimits.currentSensorData = 'C';
         Serial.println("set to change limit value of co2");
         break;
       case 3:
-        s1.CurrentSensorData = 'T';
-        Serial.println("set to change limit value of Temp");
+        upperLimits.currentSensorData = 'T';
+        Serial.println("set to change limit value of temp");
         ButtonPresses = 0;
         break;
       default:
@@ -78,25 +72,25 @@ void DrawLimitValues() {
   tft.println("CHANGING THRESHHOLDS");
 
   tft.setCursor(0, 30);
-  if (s1.CurrentSensorData == 'T') {
+  if (upperLimits.currentSensorData == 'T') {
     tft.print("*");
   }
   tft.print("Temp Limit: ");
-  tft.drawNumber(s1.Temp, tft.getCursorX(), tft.getCursorY());  
+  tft.drawNumber(upperLimits.temp, tft.getCursorX(), tft.getCursorY());  
 
   tft.setCursor(0, 60);
-  if (s1.CurrentSensorData == 'H') {
+  if (upperLimits.currentSensorData == 'H') {
     tft.print("*");
   }
   tft.print("Humid Limit: ");
-  tft.drawNumber(s1.Humid, tft.getCursorX(), tft.getCursorY());
+  tft.drawNumber(upperLimits.humid, tft.getCursorX(), tft.getCursorY());
 
   tft.setCursor(0, 90);
-  if (s1.CurrentSensorData == 'C') {
+  if (upperLimits.currentSensorData == 'C') {
     tft.print("*");
   }
   tft.print("CO2 Limit: ");
-  tft.drawNumber(s1.CO2, tft.getCursorX(), tft.getCursorY());
+  tft.drawNumber(upperLimits.co2, tft.getCursorX(), tft.getCursorY());
 }
 
 void InterruptCallback() {

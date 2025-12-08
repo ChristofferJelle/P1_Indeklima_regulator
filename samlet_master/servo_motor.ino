@@ -1,6 +1,8 @@
 void InitServo() {
   servo.attach(SERVO_PIN);
   ServoClose();
+
+  pinMode(SHUNT_PIN, INPUT);
 }
 
 void ServoClose() {
