@@ -69,8 +69,7 @@ struct SensordataTp {
   char command;
   int activePeersTotal;
 };
-// Create a struct to hold sensor readings
-SensordataTp TempIngoingStruct, CommandStruct, AveragesStruct;
+struct SensordataTp TempIngoingStruct, CommandStruct, AveragesStruct;
 
 struct PeerDataContextTp {
   esp_now_peer_info_t peerInfo;
