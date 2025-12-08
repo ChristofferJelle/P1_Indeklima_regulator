@@ -110,19 +110,6 @@ void DrawDisplay() {
   tft.setCursor(0, 120);
   tft.print("Connected Peers: ");
   tft.print(averagesStruct.activePeers);
-
-  //serial output remains the same
-  Serial.println("INCOMING READINGS");
-  Serial.print("Temperature: ");
-  Serial.print(averagesStruct.temp);
-  Serial.println(" °C");
-  Serial.print("Humidity: ");
-  Serial.print(averagesStruct.humid);
-  Serial.println(" %");
-  Serial.print("Pressure: ");
-  Serial.print(400 + averagesStruct.co2);
-  Serial.println(" ppm");
-  Serial.println();
 }
 
 void SendCommandAllSlaves(char command) {
