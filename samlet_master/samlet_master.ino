@@ -1,12 +1,35 @@
 //ESP:
-#include <esp_now.h>
-#include <WiFi.h>
-#include <esp_wifi.h>
-
 //remember to edit library header files https://jensd.dk/doc/esp32/esp32s3.html
 #include <TFT_eSPI.h> // LILYGO T-Display library
 #include <SPI.h>
 TFT_eSPI tft = TFT_eSPI(); //Create TFT object
+
+//------------------------------------------------------------------------------
+//wireless communication:
+#include <esp_now.h>
+#include <WiFi.h>
+#include <esp_wifi.h>
+
+struct SensordataTp {
+  float temp;
+  float hum;
+  float co2;
+  uint8_t id[6];
+  char command;
+  int activePeersTotal;
+};
+struct SensordataTp TempIngoingStruct, CommandStruct, AveragesStruct;
+
+struct PeerDataTp {
+  esp_now_peer_info_t peerInfo;
+  struct SensordataTp IngoingStruct;
+  bool isActive; //flag to track active peers
+  unsigned long lastSeenTime;
+};
+struct PeerDataTp peersArr[10];
+
+unsigned long lastRefresh = 0;
+const unsigned long refreshInterval = 4000;
 
 //------------------------------------------------------------------------------
 //servo:
@@ -60,27 +83,6 @@ const unsigned long rotaryRefreshInterval = 1100;
 
 int prevButtonSate;
 unsigned int ButtonPresses = 0;
-
-struct SensordataTp {
-  float temp;
-  float hum;
-  float co2;
-  uint8_t id[6];
-  char command;
-  int activePeersTotal;
-};
-struct SensordataTp TempIngoingStruct, CommandStruct, AveragesStruct;
-
-struct PeerDataContextTp {
-  esp_now_peer_info_t peerInfo;
-  struct SensordataTp IngoingStruct;
-  bool isActive; //Flag to track active peers
-  unsigned long lastSeenTime;
-};
-struct PeerDataContextTp Peers[10];
-
-unsigned long lastRefresh = 0;
-const unsigned long refreshInterval = 4000;
 
 void setup() {
   Serial.begin(115200);

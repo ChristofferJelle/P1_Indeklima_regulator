@@ -30,9 +30,9 @@ void OnDataReceived(const uint8_t* mac, const uint8_t* incomingData, int len) {
     for (int i = 0; i < 10; i++) {
       int IDIndexMatch = CheckArrayList(TempIngoingStruct);
       if (IDIndexMatch >= 0) {
-        memcpy(&Peers[IDIndexMatch].IngoingStruct, incomingData, sizeof(Peers[IDIndexMatch].IngoingStruct));
+        memcpy(&peersArr[IDIndexMatch].IngoingStruct, incomingData, sizeof(peersArr[IDIndexMatch].IngoingStruct));
         // Update peer last seen time
-        Peers[IDIndexMatch].lastSeenTime = millis();
+        peersArr[IDIndexMatch].lastSeenTime = millis();
         break;
       }
     }
@@ -48,7 +48,7 @@ void OnDataReceived(const uint8_t* mac, const uint8_t* incomingData, int len) {
 // funktion to check arraylist if any of its arrays contain the incomeing macaddress
 int CheckArrayList(struct SensordataTp MacToCheck) {
   for (int i = 0; i < 10; i++) {
-    if (memcmp(MacToCheck.id, Peers[i].peerInfo.peer_addr, sizeof(Peers[i].peerInfo.peer_addr)) == 0) {
+    if (memcmp(MacToCheck.id, peersArr[i].peerInfo.peer_addr, sizeof(peersArr[i].peerInfo.peer_addr)) == 0) {
       return i;
     }
   }
@@ -72,45 +72,45 @@ void RegisterPeers(struct SensordataTp MacToAdd) {
   int tempIndex;
   uint8_t EMPTY_MAC_ADDRESS[] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
   // loop until u find a spot in the array thats empty
-  for (int j = 0; j < 10; j++) {
-    if (memcmp(&Peers[j].peerInfo.peer_addr, EMPTY_MAC_ADDRESS, sizeof(Peers[j].peerInfo.peer_addr)) == 0) {
-      tempIndex = j;
+  for (int i = 0; i < 10; i++) {
+    if (memcmp(&peersArr[i].peerInfo.peer_addr, EMPTY_MAC_ADDRESS, sizeof(peersArr[i].peerInfo.peer_addr)) == 0) {
+      tempIndex = i;
       break;
     } else {
       continue;
     }
   }
   //then overwrite that empty spot in the array with the mac-address to add
-  memcpy(&Peers[tempIndex].peerInfo.peer_addr, MacToAdd.id, sizeof(Peers[tempIndex].peerInfo.peer_addr));
+  memcpy(&peersArr[tempIndex].peerInfo.peer_addr, MacToAdd.id, sizeof(peersArr[tempIndex].peerInfo.peer_addr));
 
-  Peers[tempIndex].peerInfo.channel = 0;
-  Peers[tempIndex].peerInfo.encrypt = false;
+  peersArr[tempIndex].peerInfo.channel = 0;
+  peersArr[tempIndex].peerInfo.encrypt = false;
 
   Serial.println("Peer MAC:");
-  AddressOfPeer(Peers[tempIndex].peerInfo.peer_addr);
+  AddressOfPeer(peersArr[tempIndex].peerInfo.peer_addr);
 
   //code for checking if the connection was a success, if it was then it send the confirmation back the slave
-  if (esp_now_add_peer(&Peers[tempIndex].peerInfo) == ESP_OK) {
+  if (esp_now_add_peer(&peersArr[tempIndex].peerInfo) == ESP_OK) {
     Serial.println("Peer added successfully");
-    Peers[tempIndex].isActive = true;
+    peersArr[tempIndex].isActive = true;
     CommandStruct.command = 'C';  //command for connection confirmed
-    esp_now_send(Peers[tempIndex].peerInfo.peer_addr, (uint8_t*)&CommandStruct, sizeof(CommandStruct));
+    esp_now_send(peersArr[tempIndex].peerInfo.peer_addr, (uint8_t*)&CommandStruct, sizeof(CommandStruct));
   } else {
     Serial.print("Failed to add peer Error code: ");
-    Serial.println(esp_now_add_peer(&Peers[tempIndex].peerInfo));
+    Serial.println(esp_now_add_peer(&peersArr[tempIndex].peerInfo));
   }
 }
 
-//format the mac-address into hexcode (the standard way of displaying a mac-address)
+//format the mac-address into hexcode (the standard way of displaying a mac-addresses)
 void AddressOfPeer(uint8_t peerInfoMAC[]) {
   for (int i = 0; i < 6; i++) {
-    if (peerInfoMAC[i] < 16) { Serial.print("0"); }  // zero pad 
+    if (peerInfoMAC[i] < 16) {Serial.print("0");} //zero pad 
     Serial.print(peerInfoMAC[i], HEX);
-    if (i < 5) { Serial.print(":"); }
+    if (i < 5) {Serial.print(":");}
   }
 }
 
-//draws the screen using library funktions based on the VT100 standard thing
+//draws the screen using library functions based on the VT100 standard
 void DrawDisplay() {
   tft.fillScreen(TFT_BLACK);
   tft.setCursor(0, 0);
@@ -119,7 +119,7 @@ void DrawDisplay() {
 
   tft.setCursor(0, 30);
   tft.print("Temp: ");
-  tft.print(AveragesStruct.temp, 1);  // 1 decimal place
+  tft.print(AveragesStruct.temp, 1); //1 decimal place
   tft.println(" C");
 
   tft.setCursor(0, 60);
@@ -136,7 +136,7 @@ void DrawDisplay() {
   tft.print("Connected Peers: ");
   tft.print(AveragesStruct.activePeersTotal, 1);
 
-  // Serial output remains the same
+  //serial output remains the same
   Serial.println("INCOMING READINGS");
   Serial.print("Temperature: ");
   Serial.print(AveragesStruct.temp);
@@ -160,10 +160,10 @@ void DrawDisplay() {
 }
 
 void SendCommandAllSlaves(char command) {
-  CommandStruct.command = command;  //command for sending the data confirmed
+  CommandStruct.command = command; //command for sending the data confirmed
 
   for (int i = 0; i < 10; i++) {
-    esp_now_send(Peers[i].peerInfo.peer_addr, (uint8_t*)&CommandStruct, sizeof(TempIngoingStruct));
+    esp_now_send(peersArr[i].peerInfo.peer_addr, (uint8_t*)&CommandStruct, sizeof(TempIngoingStruct));
   }
 }
 
@@ -176,10 +176,10 @@ void CalculateAverage(struct SensordataTp* resultStruct) {
   int activePeersTotal = 0;
 
   for (int i = 0; i < 10; i++) {
-    if (Peers[i].isActive == true) {
-      resultStruct->temp += Peers[i].IngoingStruct.temp;
-      resultStruct->hum += Peers[i].IngoingStruct.hum;
-      resultStruct->co2 += Peers[i].IngoingStruct.co2;
+    if (peersArr[i].isActive == true) {
+      resultStruct->temp += peersArr[i].IngoingStruct.temp;
+      resultStruct->hum += peersArr[i].IngoingStruct.hum;
+      resultStruct->co2 += peersArr[i].IngoingStruct.co2;
       activePeersTotal++; 
     }
   }
@@ -197,22 +197,22 @@ void PruneUnresponsivePeers() {
   const unsigned long TIMEOUT_MS = refreshInterval+500;  //3 seconds timeout
 
   for (int i = 0; i < 10; i++) {
-    if (Peers[i].isActive == true) {
-      if (currentTime - Peers[i].lastSeenTime > TIMEOUT_MS) {
+    if (peersArr[i].isActive == true) {
+      if (currentTime - peersArr[i].lastSeenTime > TIMEOUT_MS) {
         // Peer has timed out.
         Serial.println("Peer timed out. Sending Reset command and removing.");
 
         CommandStruct.command = 'R';
-        esp_now_send(Peers[i].peerInfo.peer_addr, (uint8_t*)&CommandStruct, sizeof(CommandStruct));
+        esp_now_send(peersArr[i].peerInfo.peer_addr, (uint8_t*)&CommandStruct, sizeof(CommandStruct));
         CommandStruct.command = ' ';
 
         //Remove the peer using the ESP-NOW library function
-        esp_now_del_peer(Peers[i].peerInfo.peer_addr);
-        Peers[i].isActive = false;
+        esp_now_del_peer(peersArr[i].peerInfo.peer_addr);
+        peersArr[i].isActive = false;
 
         //clear address
         uint8_t EMPTY_MAC_ADDRESS[] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
-        memcpy(&Peers[i].peerInfo.peer_addr, EMPTY_MAC_ADDRESS, sizeof(EMPTY_MAC_ADDRESS));
+        memcpy(&peersArr[i].peerInfo.peer_addr, EMPTY_MAC_ADDRESS, sizeof(EMPTY_MAC_ADDRESS));
       }
     }
   }
