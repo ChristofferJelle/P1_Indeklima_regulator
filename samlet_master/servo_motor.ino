@@ -8,18 +8,18 @@ void ServoOpen() {
   servoState = sweepOpen;
 }
 
-float ShuntCurrent() {
-  float modstand = 1.0;
-  //float shuntADC = analogRead(shuntPin);
-  //float vOut = 3.33  * analogRead(shuntPin) / (pow(2.0, 12.0) - 1.0);
+float ShuntVoltage() {
+  int resistor = 1;
+  float maxVolt = 3.3;
+
+  //calculate average to minimise noise on analog pin
   float avgVolt = 0;
   int samples = 350;
   for (int i = 0; i < samples; i++) {
-    avgVolt += 3.33  * analogRead(SHUNT_PIN) / (pow(2.0, 12.0) - 1.0);
+    shuntVolt = maxVolt * analogRead(SHUNT_PIN) / (pow(2, 12) - 1.0);
+    avgVolt += shuntVolt;
   }
-  avgVolt = avgVolt / samples;
 
-  float current = avgVolt / modstand;
-  return current;
+  return avgVolt / samples;
 }
 

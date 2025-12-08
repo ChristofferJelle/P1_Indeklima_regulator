@@ -128,7 +128,7 @@ void loop() {
       ESP.restart();
     }
 
-    float shuntCurrent = ShuntCurrent();
+    float shuntVoltage = ShuntVoltage();
 
     if (millis() - lastRefresh >= dataRequestInterval) {
       PruneUnresponsivePeers();
@@ -146,7 +146,7 @@ void loop() {
       }
     }
 
-    if (shuntCurrent > 2.94 && !shuntTimeout) {
+    if (shuntVoltage > 2.94 && !shuntTimeout) {
 
       shuntTimeout = true;
     }
