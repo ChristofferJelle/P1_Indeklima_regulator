@@ -18,16 +18,16 @@ void UpdateSensorData(bool direction) {
   }
 }
 
-void readEncoder() {
-  currentStateCLK = digitalRead(CLK);
+void ReadEncoder() {
+  currentStateCLK = digitalRead(CLK_PIN);
   if (currentStateCLK != lastStateCLK && currentStateCLK == 1) {
-    bool direction = digitalRead(DT) != currentStateCLK;
+    bool direction = digitalRead(DT_PIN) != currentStateCLK;
     UpdateSensorData(direction);
     //Serial.print("GET ME OUTTTTTTTTTT OF THIS STATE");
   }
   lastStateCLK = currentStateCLK;
 
-  int buttonState = digitalRead(SW);
+  int buttonState = digitalRead(SW_PIN);
 
   if (buttonState == HIGH && prevButtonSate == LOW) {
     ++ButtonPresses;
@@ -53,7 +53,7 @@ void readEncoder() {
         break;
     }
   }
-  prevButtonSate = digitalRead(SW);
+  prevButtonSate = digitalRead(SW_PIN);
 }
 
 void DrawLimitValues() {

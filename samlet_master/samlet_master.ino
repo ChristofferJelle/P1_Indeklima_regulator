@@ -12,13 +12,13 @@
 const int servoPin = 17;
 
 Servo servo;  //create servo object
-enum ServoState {
-  SWEEP_OPEN,
-  SWEEP_CLOSE,
-  IDLE  // triggered by shunt hit
+enum ServoStateTp {
+  sweepOpen,
+  sweepClose,
+  idle //triggered by shunt hit
 };
-ServoState servoState = SWEEP_CLOSE;
-const int shuntPin = 32;
+ServoStateTp servoState = sweepClose;
+#define SHUNT_PIN 32
 unsigned long lastShuntTime = 0;
 const unsigned long shuntInterval = 1000;
 bool shuntTimeout = false;
@@ -29,9 +29,9 @@ TFT_eSPI tft = TFT_eSPI();  // Create TFT object
 #define BUTTON_PIN 35
 
 //Rotary encoder:
-#define CLK 37  //1st click
-#define DT 38   //2nd click
-#define SW 39   //button click
+#define CLK_PIN 37  //1st click
+#define DT_PIN 38   //2nd click
+#define SW_PIN 39   //button click
 bool interupt = false;
 
 struct SensorDataLimit {
@@ -42,11 +42,11 @@ struct SensorDataLimit {
 };
 struct SensorDataLimit s1;
 
-enum RoteryEncoderState {
+enum RoteryEncoderStateTp {
   IDLESTATE,
   TIMEOUT
 };
-RoteryEncoderState roteryEncoderState = IDLESTATE;
+RoteryEncoderStateTp roteryEncoderState = IDLESTATE;
 int currentStateCLK;
 int lastStateCLK;
 unsigned long roteryLastRefresh = 0;
@@ -54,10 +54,8 @@ unsigned long limitDisplayLastRefresh = 0;
 const unsigned long limitDisplayrefreshInterval = 100;
 const unsigned long roteryRefreshInterval = 1100;
 
-
 int prevButtonSate;
 unsigned int ButtonPresses = 0;
-
 
 //hack
 struct Sensordata {
@@ -81,15 +79,11 @@ PeerDataContext Peers[10];
 unsigned long lastRefresh = 0;
 const unsigned long refreshInterval = 4000;
 
-
-
-
-
 void setup() {
   Serial.begin(115200);
   pinMode(BUTTON_PIN, INPUT);
 
-  pinMode(shuntPin, INPUT);
+  pinMode(SHUNT_PIN, INPUT);
   Serial.println();
 
   InitDisplay();
@@ -98,7 +92,7 @@ void setup() {
 
   //i could also just do Serial.println(WiFi.macAddress()); i guess, but this is cooler
   Serial.print("[DEFAULT] ESP32 Board MAC Address: ");
-  uint8_t* ownMac = readMacAddress();
+  uint8_t* ownMac = ReadMacAddress();
   //converts array into a string.
   if (ownMac != nullptr) {
     String ownMacHex;
@@ -112,25 +106,25 @@ void setup() {
   }
 
   //rotary encoder:
-  pinMode(CLK, INPUT_PULLUP);
-  pinMode(DT, INPUT_PULLUP);
-  pinMode(SW, INPUT_PULLUP);
+  pinMode(CLK_PIN, INPUT_PULLUP);
+  pinMode(DT_PIN, INPUT_PULLUP);
+  pinMode(SW_PIN, INPUT_PULLUP);
 
-  attachInterrupt(CLK, InterruptCallback, FALLING);
+  attachInterrupt(CLK_PIN, InterruptCallback, FALLING);
 
-  prevButtonSate = digitalRead(SW);
+  prevButtonSate = digitalRead(SW_PIN);
 
   Serial.println(prevButtonSate);
   // Read the initial state of CLK
-  lastStateCLK = digitalRead(CLK);
-  currentStateCLK = digitalRead(CLK);
+  lastStateCLK = digitalRead(CLK_PIN);
+  currentStateCLK = digitalRead(CLK_PIN);
   //servo:
   servo.attach(servoPin);
   ServoClose();
 }
 
 void loop() {
-  readEncoder();
+  ReadEncoder();
   unsigned long timeNow = millis();
   if (timeNow - roteryLastRefresh >= roteryRefreshInterval) {
     roteryEncoderState = IDLESTATE;
@@ -152,7 +146,7 @@ void loop() {
     if (millis() - lastRefresh >= refreshInterval) {
       PruneUnresponsivePeers();
       SendCommandAllSlaves('S');
-      CalculateAvrg(&AveragesStruct);
+      CalculateAverage(&AveragesStruct);
       DrawDisplay();
       lastRefresh = millis();
     }
@@ -171,14 +165,14 @@ void loop() {
     }
     // Vi er i timeout-tilstand → skriv servo-position
     if (shuntTimeout && !shuntActionDone) {
-      if (servoState == SWEEP_OPEN) {
+      if (servoState == sweepOpen) {
         servo.write(0);
-      } else if (servoState == SWEEP_CLOSE) {
+      } else if (servoState == sweepClose) {
         servo.write(180);
       }
       lastShuntTime = millis();
       shuntActionDone = true;
-      servoState = IDLE;
+      servoState = idle;
     }
 
     // Reset timeout når tiden er gået
