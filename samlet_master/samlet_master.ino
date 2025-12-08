@@ -16,9 +16,9 @@ struct SensordataTp {
   float temp;
   float humid;
   float co2;
-  uint8_t id[6];
+  uint8_t id[6]; //uint8_t because only the last 2 digits are used
   char command;
-  int activePeersTotal;
+  int activePeers;
 };
 struct SensordataTp TemporaryIngoingStruct, CommandStruct, AveragesStruct;
 
@@ -32,7 +32,7 @@ const int maxPeers = 10;
 struct PeerDataTp peersArr[maxPeers];
 
 unsigned long lastRefresh = 0;
-const unsigned long refreshInterval = 4000;
+const unsigned long dataRequestInterval = 4000;
 
 //------------------------------------------------------------------------------
 //servo:
@@ -130,7 +130,7 @@ void loop() {
 
     float shuntCurrent = ShuntCurrent();
 
-    if (millis() - lastRefresh >= refreshInterval) {
+    if (millis() - lastRefresh >= dataRequestInterval) {
       PruneUnresponsivePeers();
       SendCommandAllSlaves('S');
       CalculateAverage(&AveragesStruct);
