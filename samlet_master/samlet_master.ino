@@ -42,23 +42,23 @@ struct SensorDataLimit {
 };
 struct SensorDataLimit s1;
 
-enum RoteryEncoderStateTp {
+enum RotaryEncoderStateTp {
   IDLESTATE,
   TIMEOUT
 };
-RoteryEncoderStateTp roteryEncoderState = IDLESTATE;
+RotaryEncoderStateTp rotaryEncoderState = IDLESTATE;
 int currentStateCLK;
 int lastStateCLK;
-unsigned long roteryLastRefresh = 0;
+unsigned long rotaryLastRefresh = 0;
 unsigned long limitDisplayLastRefresh = 0;
 const unsigned long limitDisplayrefreshInterval = 100;
-const unsigned long roteryRefreshInterval = 1100;
+const unsigned long rotaryRefreshInterval = 1100;
 
 int prevButtonSate;
 unsigned int ButtonPresses = 0;
 
 //hack
-struct Sensordata {
+struct SensordataTp {
   float temp;
   float hum;
   float co2;
@@ -67,12 +67,12 @@ struct Sensordata {
   int activePeersTotal;
 };
 // Create a struct to hold sensor readings
-Sensordata TempIngoingStruct, CommandStruct, AveragesStruct;
+SensordataTp TempIngoingStruct, CommandStruct, AveragesStruct;
 
 struct PeerDataContext {
   esp_now_peer_info_t peerInfo;
   Sensordata IngoingStruct;
-  bool isActive;  // Flag to track active peers
+  bool isActive; //Flag to track active peers
   unsigned long lastSeenTime;
 };
 PeerDataContext Peers[10];
@@ -126,14 +126,14 @@ void setup() {
 void loop() {
   ReadEncoder();
   unsigned long timeNow = millis();
-  if (timeNow - roteryLastRefresh >= roteryRefreshInterval) {
-    roteryEncoderState = IDLESTATE;
-  } else if (roteryEncoderState == TIMEOUT && timeNow - limitDisplayLastRefresh >= limitDisplayrefreshInterval) {
+  if (timeNow - rotaryLastRefresh >= rotaryRefreshInterval) {
+    rotaryEncoderState = IDLESTATE;
+  } else if (rotaryEncoderState == TIMEOUT && timeNow - limitDisplayLastRefresh >= limitDisplayrefreshInterval) {
     DrawLimitValues();
     limitDisplayLastRefresh = timeNow;
   }
 
-  if (roteryEncoderState != TIMEOUT) {
+  if (rotaryEncoderState != TIMEOUT) {
     int buttonState = digitalRead(BUTTON_PIN);
     if (buttonState == LOW) {
       Serial.println("Button pressed!");

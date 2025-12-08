@@ -46,7 +46,7 @@ void OnDataReceived(const uint8_t* mac, const uint8_t* incomingData, int len) {
 }
 
 // funktion to check arraylist if any of its arrays contain the incomeing macaddress
-int CheckArrayList(struct Sensordata MacToCheck) {
+int CheckArrayList(struct SensordataTp MacToCheck) {
   for (int i = 0; i < 10; i++) {
     if (memcmp(MacToCheck.id, Peers[i].peerInfo.peer_addr, sizeof(Peers[i].peerInfo.peer_addr)) == 0) {
       return i;
@@ -68,7 +68,7 @@ uint8_t* ReadMacAddress() {
 }
 
 //funktion used in recive data callback funktion to register unregisted peers
-void RegisterPeers(struct Sensordata MacToAdd) {
+void RegisterPeers(struct SensordataTp MacToAdd) {
   int tempIndex;
   uint8_t EMPTY_MAC_ADDRESS[] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
   // loop until u find a spot in the array thats empty
