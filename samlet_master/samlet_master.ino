@@ -61,7 +61,6 @@ const unsigned long rotaryRefreshInterval = 1100;
 int prevButtonSate;
 unsigned int ButtonPresses = 0;
 
-//hack
 struct SensordataTp {
   float temp;
   float hum;
