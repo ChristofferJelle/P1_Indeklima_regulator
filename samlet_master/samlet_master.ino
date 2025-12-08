@@ -64,6 +64,8 @@ ScreenStateTp screenStateTp = main;
 int switchMenuPin = 0;
 int switchButtonState;
 int switchPrevButtonSate;
+const float HYSTERESIS_MARGIN = 2.0;
+
 
 int prevButtonSate;
 unsigned int ButtonPresses = 0;
@@ -181,14 +183,24 @@ void loop() {
     }
 
     if (!shuntTimeout) {
-      if ((AveragesStruct.temp >= s1.Temp || AveragesStruct.hum >= s1.Humid) || AveragesStruct.co2 >= s1.CO2) {
-        ServoOpen();
-      } else if (AveragesStruct.temp <= s2.Temp || AveragesStruct.hum <= s2.Humid) {
-        ServoClose();
+
+      if (servoState == idle || servoState == sweepClose) {
+        // We are currently closed or idle. We only open if the average exceeds the upper threshold.
+        if ((AveragesStruct.temp >= (s1.Temp + HYSTERESIS_MARGIN)) || (AveragesStruct.co2 >= (s1.Humid + HYSTERESIS_MARGIN)) || (AveragesStruct.co2 >= (s1.CO2 + HYSTERESIS_MARGIN))) {
+          ServoOpen();
+        }
       } else {
         ServoClose();
       }
+
+      if (servoState == sweepOpen) {
+        // We are currently open. We only close if any averages drop below the lower threshold.
+        if ((AveragesStruct.temp < (s2.Temp - HYSTERESIS_MARGIN)) || (AveragesStruct.co2 < (s2.Humid - HYSTERESIS_MARGIN)) || (AveragesStruct.co2 < (s2.CO2 - HYSTERESIS_MARGIN))) {
+          ServoClose();
+        }
+      }
     }
+
 
     if (shuntCurrent > 2.94 && !shuntTimeout) {
 
