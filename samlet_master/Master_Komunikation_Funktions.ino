@@ -124,17 +124,17 @@ void DrawDisplay() {
 
   tft.setCursor(0, 60);
   tft.print("Humid: ");
-  tft.print(AveragesStruct.hum, 1);
+  tft.print(AveragesStruct.hum);
   tft.println(" %");
 
   tft.setCursor(0, 90);
   tft.print("CO2: ");
-  tft.print(400 + AveragesStruct.co2, 1);
+  tft.print(400 + AveragesStruct.co2);
   tft.println(" ppm");
 
   tft.setCursor(0, 120);
   tft.print("Connected Peers: ");
-  tft.print(AveragesStruct.activePeersTotal, 1);
+  tft.print(AveragesStruct.activePeersTotal);
 
   //serial output remains the same
   Serial.println("INCOMING READINGS");
