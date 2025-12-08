@@ -4,18 +4,18 @@
 #include <esp_wifi.h>
 
 //remember to edit library header files https://jensd.dk/doc/esp32/esp32s3.html
-#include <TFT_eSPI.h> // LILYGO T-Display library
+#include <TFT_eSPI.h>  // LILYGO T-Display library
 #include <SPI.h>
 
 //servo
-#include <ESP32Servo.h> //library for servo
+#include <ESP32Servo.h>  //library for servo
 const int servoPin = 17;
 
 Servo servo;  //create servo object
 enum ServoStateTp {
   sweepOpen,
   sweepClose,
-  idle //triggered by shunt hit
+  idle  //triggered by shunt hit
 };
 ServoStateTp servoState = sweepClose;
 #define SHUNT_PIN 32
@@ -28,9 +28,9 @@ TFT_eSPI tft = TFT_eSPI();  // Create TFT object
 #define BUTTON_PIN 35
 
 //Rotary encoder:
-#define CLK_PIN 37 //1st click
-#define DT_PIN 38 //2nd click
-#define SW_PIN 39 //button click
+#define CLK_PIN 37  //1st click
+#define DT_PIN 38   //2nd click
+#define SW_PIN 39   //button click
 bool interrupt = false;
 //lower limit values need to be temp 15 and humid 30%
 struct SensorDataLimitTp {
@@ -39,7 +39,9 @@ struct SensorDataLimitTp {
   long CO2 = 800;
   char CurrentSensorData = 'T';
 };
-struct SensorDataLimitTp s1;
+struct SensorDataLimitTp s1, s2;
+
+int switchButtonPresses;
 
 enum RotaryEncoderStateTp {
   idleState,
@@ -60,11 +62,11 @@ enum ScreenStateTp {
 };
 ScreenStateTp screenStateTp = main;
 int switchMenuPin = 0;
+int switchButtonState;
+int switchPrevButtonSate;
 
 int prevButtonSate;
 unsigned int ButtonPresses = 0;
-
-//hack
 struct SensordataTp {
   float temp;
   float hum;
@@ -79,7 +81,7 @@ SensordataTp TempIngoingStruct, CommandStruct, AveragesStruct;
 struct PeerDataContextTp {
   esp_now_peer_info_t peerInfo;
   struct SensordataTp IngoingStruct;
-  bool isActive; //Flag to track active peers
+  bool isActive;  //Flag to track active peers
   unsigned long lastSeenTime;
 };
 PeerDataContextTp Peers[10];
@@ -87,8 +89,13 @@ unsigned long lastRefresh = 0;
 const unsigned long refreshInterval = 4000;
 
 void setup() {
+  //lower limit value is place here cus im tired;
+  s2.Temp = 15;
+  s2.Humid = 30;
+
   Serial.begin(115200);
   pinMode(BUTTON_PIN, INPUT);
+  pinMode(switchMenuPin, INPUT_PULLUP);
 
   pinMode(SHUNT_PIN, INPUT);
   Serial.println();
@@ -135,12 +142,24 @@ void loop() {
   unsigned long timeNow = millis();
   if (timeNow - rotaryLastRefresh >= rotaryRefreshInterval) {
     rotaryEncoderState = idleState;
-  } else if (rotaryEncoderState == timeout && timeNow - limitDisplayLastRefresh >= limitDisplayRefreshInterval) {
-    DrawLimitValues();
+  }
+  if (screenStateTp != main && timeNow - limitDisplayLastRefresh >= limitDisplayRefreshInterval) {
+    switch (screenStateTp) {
+      case main:
+        //needs to let everything else run ig
+        break;
+      case upperLimitValue:
+        DrawupperLimitValues();
+        break;
+      case lowerLimitValue:
+        DrawLowerLimitValues();
+        break;
+    }
     limitDisplayLastRefresh = timeNow;
   }
+  ChangeDisplay();
+  if (screenStateTp == main) {
 
-  if (rotaryEncoderState != timeout) {
     int buttonState = digitalRead(BUTTON_PIN);
     if (buttonState == LOW) {
       Serial.println("Button pressed!");
@@ -161,6 +180,8 @@ void loop() {
     if (!shuntTimeout) {
       if ((AveragesStruct.temp >= s1.Temp || AveragesStruct.hum >= s1.Humid) || AveragesStruct.co2 >= s1.CO2) {
         ServoOpen();
+      } else if (AveragesStruct.temp <= s2.Temp || AveragesStruct.hum <= s2.Humid) {
+        ServoClose();
       } else {
         ServoClose();
       }
