@@ -1,24 +1,23 @@
-
-float calculateVolt(int samples = 50) {
-  float avg = 0;
-
-  for (int i = 0; i < samples; i++) {
-    avg += analogRead(MQ135.co2Pin);
-  }
-  avg = avg / samples;
-
-
-  return avg;
-}
-
 float readVoltage() {
-  float ADC = MQ135.espResulution * (calculateVolt() / (pow(2.0, bits) - 1.0));
+  float ADC = MQ135.espResulution * (analogRead(MQ135.co2Pin) / (pow(2.0, bits) - 1.0));
 
   float VoltageDivider = (1000.0 + 2000.0) / 2000.0;
 
-  MQ135.averageVolt = (ADC * VoltageDivider);
-  return MQ135.averageVolt;
+  return (ADC * VoltageDivider);
 };
+
+float calculateVolt(int samples = 10) {
+  float avg = 0;
+
+  for (int i = 0; i < samples; i++) {
+    avg += readVoltage();
+  }
+  avg = avg / samples;
+
+  MQ135.averageVolt = avg;
+  return MQ135.averageVolt;
+}
+
 
 // Calculate RS (sensor resistance)
 float readRS() {
