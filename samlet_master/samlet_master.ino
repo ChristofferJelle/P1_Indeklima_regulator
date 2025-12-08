@@ -95,7 +95,7 @@ void setup() {
 
   Serial.begin(115200);
   pinMode(BUTTON_PIN, INPUT);
-  pinMode(switchMenuPin, INPUT_PULLUP);
+  pinMode(switchMenuPin, INPUT);
 
   pinMode(SHUNT_PIN, INPUT);
   Serial.println();
@@ -103,6 +103,8 @@ void setup() {
   InitDisplay();
 
   InitESP32_NOW();
+
+
 
   //i could also just do Serial.println(WiFi.macAddress()); i guess, but this is cooler
   Serial.print("[DEFAULT] ESP32 Board MAC Address: ");
@@ -127,6 +129,7 @@ void setup() {
   attachInterrupt(CLK_PIN, InterruptCallback, FALLING);
 
   prevButtonSate = digitalRead(SW_PIN);
+  switchPrevButtonSate = digitalRead(switchMenuPin);
 
   Serial.println(prevButtonSate);
   // Read the initial state of CLK
