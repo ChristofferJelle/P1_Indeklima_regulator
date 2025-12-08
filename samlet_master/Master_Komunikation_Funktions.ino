@@ -157,7 +157,6 @@ void CalculateAverage(struct SensordataTp* resultStruct) {
   resultStruct->humid /= activePeers;
   resultStruct->co2 /= activePeers;
   resultStruct->activePeersTotal = activePeers;
-  Serial.println(activePeers);
 }
 
 //sets a time on every incomeing sensordata peer to keep track of when that peer was last seen,
