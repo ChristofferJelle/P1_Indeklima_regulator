@@ -77,7 +77,8 @@ struct PeerDataContextTp {
   bool isActive; //Flag to track active peers
   unsigned long lastSeenTime;
 };
-PeerDataContextTp Peers[10];
+struct PeerDataContextTp Peers[10];
+
 unsigned long lastRefresh = 0;
 const unsigned long refreshInterval = 4000;
 
