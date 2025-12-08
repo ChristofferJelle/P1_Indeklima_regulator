@@ -15,7 +15,7 @@ float readVoltage() {
   float ADC = MQ135.espResulution * (calculateVolt() / (pow(2.0, bits) - 1.0));
 
   float VoltageDivider = (1000.0 + 2000.0) / 2000.0;
-  (ADC * VoltageDivider);
+
   MQ135.averageVolt = (ADC * VoltageDivider);
   return MQ135.averageVolt;
 };

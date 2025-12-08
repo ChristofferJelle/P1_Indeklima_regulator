@@ -42,10 +42,10 @@ struct SensorDataLimitTp {
 struct SensorDataLimitTp s1;
 
 enum RotaryEncoderStateTp {
-  idle,
+  idleState,
   timeout
 };
-RotaryEncoderStateTp rotaryEncoderState = idle;
+RotaryEncoderStateTp rotaryEncoderState = idleState;
 int currentStateCLK;
 int lastStateCLK;
 unsigned long rotaryLastRefresh = 0;
@@ -126,7 +126,7 @@ void loop() {
   ReadEncoder();
   unsigned long timeNow = millis();
   if (timeNow - rotaryLastRefresh >= rotaryRefreshInterval) {
-    rotaryEncoderState = idle;
+    rotaryEncoderState = idleState;
   } else if (rotaryEncoderState == timeout && timeNow - limitDisplayLastRefresh >= limitDisplayRefreshInterval) {
     DrawLimitValues();
     limitDisplayLastRefresh = timeNow;
