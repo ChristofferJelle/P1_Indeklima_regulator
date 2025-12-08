@@ -1,12 +1,12 @@
 // Callback when data is received
 void OnDataReceived(const uint8_t* mac, const uint8_t* incomingData) {
-  memcpy(&TempIngoingStruct, incomingData, sizeof(TempIngoingStruct));
+  memcpy(&TemporaryIngoingStruct, incomingData, sizeof(TemporaryIngoingStruct));
   // The condition reads: "If the first 6 bytes of peerInfo are NOT equal to the first 6 bytes of IngoingStruct.id"
-  if (CheckArrayList(TempIngoingStruct) >= 0) {
+  if (CheckArrayList(TemporaryIngoingStruct) >= 0) {
     //Serial.println("Peer already registered");
 
     for (int i = 0; i < 10; i++) {
-      int IDIndexMatch = CheckArrayList(TempIngoingStruct);
+      int IDIndexMatch = CheckArrayList(TemporaryIngoingStruct);
       if (IDIndexMatch >= 0) {
         memcpy(&peersArr[IDIndexMatch].IngoingStruct, incomingData, sizeof(peersArr[IDIndexMatch].IngoingStruct));
         // Update peer last seen time
@@ -19,7 +19,7 @@ void OnDataReceived(const uint8_t* mac, const uint8_t* incomingData) {
     //Serial.println(len);
   } else {
     Serial.println("who tf are you, get in here");
-    RegisterPeers(TempIngoingStruct);
+    RegisterPeers(TemporaryIngoingStruct);
   }
 }
 

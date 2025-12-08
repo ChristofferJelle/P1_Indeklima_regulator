@@ -20,7 +20,7 @@ struct SensordataTp {
   char command;
   int activePeersTotal;
 };
-struct SensordataTp TempIngoingStruct, CommandStruct, AveragesStruct;
+struct SensordataTp TemporaryIngoingStruct, CommandStruct, AveragesStruct;
 
 struct PeerDataTp {
   esp_now_peer_info_t peerInfo;
