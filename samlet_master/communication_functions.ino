@@ -1,5 +1,7 @@
 //callback function for when data is received
 void OnDataReceived(const uint8_t* mac, const uint8_t* incomingData) {
+  struct SensordataTp temporaryIncomingStruct;
+
   memcpy(&temporaryIncomingStruct, incomingData, sizeof(temporaryIncomingStruct));
 
   if(CheckPeerId(temporaryIncomingStruct.id) >= 0) { //if peer is already registered
