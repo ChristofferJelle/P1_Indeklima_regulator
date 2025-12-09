@@ -1,53 +1,50 @@
-void UpdateSensorData(bool direction) {
-  switch(upperLimits.currentSensorData) {
+void UpdateSensorData(bool direction, struct SensorDataLimitTp* dataStruct) {
+  switch(dataStruct->currentSensorData) {
     case 'T':
-      upperLimits.temp += direction ? -1 : 1;
+      dataStruct->temp += direction ? -1 : 1;
       break;
     case 'H':
-      upperLimits.humid += direction ? -1 : 1;
+      dataStruct->humid += direction ? -1 : 1;
       break;
     case 'C':
-      upperLimits.co2 += direction ? -1 : 1;
+      dataStruct->co2 += direction ? -1 : 1;
       break;
   }
 }
 
 void ReadEncoder() {
   currentStateCLK = digitalRead(CLK_PIN);
-  if (currentStateCLK != lastStateCLK && currentStateCLK == 1) {
-    bool direction = digitalRead(DT_PIN) != currentStateCLK;
-    UpdateSensorData(direction);
-    //Serial.print("GET ME OUTTTTTTTTTT OF THIS STATE");
+  if(currentStateCLK != lastStateCLK && currentStateCLK == 1) {
+    bool direction = (digitalRead(DT_PIN) != currentStateCLK);
+    UpdateSensorData(direction, &upperLimits);
   }
   lastStateCLK = currentStateCLK;
 
   int buttonState = digitalRead(SW_PIN);
-
-  if (buttonState == HIGH && prevButtonSate == LOW) {
+  if(buttonState == HIGH && prevButtonState == LOW) {
     ++ButtonPresses;
-    // GO INTO TIMEOUT STATE LITTERLY JUST SO THE DISPLAY CHANGES
+  
     rotaryLastRefresh = millis();
     rotaryEncoderState = timeout;
-    switch (ButtonPresses) {
+    switch(ButtonPresses) {
       case 1:
         upperLimits.currentSensorData = 'H';
-        Serial.println("set to change limit value of humid");
-
+        Serial.println("Set to change limit value of humidity");
         break;
       case 2:
         upperLimits.currentSensorData = 'C';
-        Serial.println("set to change limit value of co2");
+        Serial.println("Set to change limit value of co2");
         break;
       case 3:
         upperLimits.currentSensorData = 'T';
-        Serial.println("set to change limit value of temp");
+        Serial.println("Set to change limit value of temperature");
         ButtonPresses = 0;
         break;
       default:
         break;
     }
   }
-  prevButtonSate = digitalRead(SW_PIN);
+  prevButtonState = digitalRead(SW_PIN);
 }
 
 void DrawLimitValues() {
@@ -57,29 +54,33 @@ void DrawLimitValues() {
   tft.println("CHANGING THRESHHOLDS");
 
   tft.setCursor(0, 30);
-  if (upperLimits.currentSensorData == 'T') {
+  if(upperLimits.currentSensorData == 'T') {
     tft.print("*");
   }
-  tft.print("Temp Limit: ");
-  tft.drawNumber(upperLimits.temp, tft.getCursorX(), tft.getCursorY());  
+  tft.print("Temperature Limit: ");
+  tft.drawNumber(upperLimits.temp, tft.getCursorX(), tft.getCursorY());
+  tft.print(" "); tft.print(176); tft.print("C");
 
   tft.setCursor(0, 60);
-  if (upperLimits.currentSensorData == 'H') {
+  if(upperLimits.currentSensorData == 'H') {
     tft.print("*");
   }
-  tft.print("Humid Limit: ");
+  tft.print("Humidity Limit: ");
   tft.drawNumber(upperLimits.humid, tft.getCursorX(), tft.getCursorY());
+  tft.print("%");
 
   tft.setCursor(0, 90);
-  if (upperLimits.currentSensorData == 'C') {
+  if(upperLimits.currentSensorData == 'C') {
     tft.print("*");
   }
   tft.print("CO2 Limit: ");
   tft.drawNumber(upperLimits.co2, tft.getCursorX(), tft.getCursorY());
+  tft.print(" ppm");
 }
 
 void InterruptCallback() {
-  if (rotaryEncoderState != timeout && millis() - rotaryLastRefresh >= rotaryRefreshInterval) {
+  if(rotaryEncoderState != timeout
+  && millis() - rotaryLastRefresh >= rotaryRefreshInterval) {
     rotaryLastRefresh = millis();
     rotaryEncoderState = timeout;
   }

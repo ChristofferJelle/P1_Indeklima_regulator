@@ -22,7 +22,7 @@ void InitRotaryEncoder() {
   pinMode(SW_PIN, INPUT_PULLUP);
   attachInterrupt(CLK_PIN, InterruptCallback, FALLING);
 
-  prevButtonSate = digitalRead(SW_PIN);
+  prevButtonState = digitalRead(SW_PIN);
 
   //read initial state of CLK
   lastStateCLK = digitalRead(CLK_PIN);
@@ -37,7 +37,7 @@ void InitServo() {
 }
 
 //get own MAC-address
-uint8_t* ReadOwnMacAddress() {
+uint8_t* GetOwnMacAddress() {
   static uint8_t baseMac[6];
 
   if (esp_wifi_get_mac(WIFI_IF_STA, baseMac) == ESP_OK) {

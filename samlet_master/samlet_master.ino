@@ -25,7 +25,7 @@ struct SensordataTp commandStruct, averagesStruct;
 struct PeerDataTp {
   esp_now_peer_info_t peerInfo;
   struct SensordataTp incomingStruct;
-  bool isActive; //flag to track active peers
+  bool isActive;
   unsigned long lastSeenTime;
 };
 const int maxPeers = 10;
@@ -60,7 +60,6 @@ bool shuntActionDone = false;
 #define DT_PIN 38 //2nd click
 #define SW_PIN 39 //button click
 
-//lower limit values need to be temp 15 and humid 30%
 struct SensorDataLimitTp {
   long temp = 25;
   long humid = 60;
@@ -82,12 +81,11 @@ unsigned long limitDisplayLastRefresh = 0;
 const unsigned long limitDisplayRefreshInterval = 100;
 const unsigned long rotaryRefreshInterval = 1100;
 
-int prevButtonSate;
+int prevButtonState;
 unsigned int ButtonPresses = 0;
 
 void setup() {
   Serial.begin(115200);
-  //Serial.println();
 
   InitESP();
   InitRotaryEncoder();
@@ -95,7 +93,7 @@ void setup() {
 
   //could also just do Serial.println(WiFi.macAddress());, but this is cooler
   Serial.print("[DEFAULT] ESP32 Board MAC Address: ");
-  uint8_t* ownMac = ReadOwnMacAddress();
+  uint8_t* ownMac = GetOwnMacAddress();
   //convert array into a string
   if (ownMac != nullptr) {
     String ownMacHex;
@@ -113,16 +111,17 @@ void loop() {
   ReadEncoder();
 
   unsigned long timeNow = millis();
-  if (timeNow - rotaryLastRefresh >= rotaryRefreshInterval) {
+  if(timeNow - rotaryLastRefresh >= rotaryRefreshInterval) {
     rotaryEncoderState = idleState;
-  } else if (rotaryEncoderState == timeout && timeNow - limitDisplayLastRefresh >= limitDisplayRefreshInterval) {
+  } else if(rotaryEncoderState == timeout
+            && timeNow - limitDisplayLastRefresh >= limitDisplayRefreshInterval) {
     DrawLimitValues();
     limitDisplayLastRefresh = timeNow;
   }
 
-  if (rotaryEncoderState != timeout) {
+  if(rotaryEncoderState != timeout) {
     int buttonState = digitalRead(BUTTON_PIN);
-    if (buttonState == LOW) {
+    if(!buttonState) {
       Serial.println("Button pressed!");
       SendCommandAllSlaves('R');
       ESP.restart();
@@ -130,7 +129,7 @@ void loop() {
 
     float shuntVoltage = ShuntVoltage();
 
-    if (millis() - lastRefresh >= dataRequestInterval) {
+    if(millis() - dataRequestInterval > lastRefresh) {
       PruneUnresponsivePeers();
       SendCommandAllSlaves('S');
       CalculateAverage(&averagesStruct);
@@ -138,23 +137,23 @@ void loop() {
       lastRefresh = millis();
     }
 
-    if (!shuntTimeout) {
-      if ((averagesStruct.temp >= upperLimits.temp || averagesStruct.humid >= upperLimits.humid) || averagesStruct.co2 >= upperLimits.co2) {
+    if(!shuntTimeout) {
+      if((averagesStruct.temp >= upperLimits.temp)
+      || (averagesStruct.humid >= upperLimits.humid)
+      || (averagesStruct.co2 >= upperLimits.co2)) {
         ServoOpen();
       } else {
         ServoClose();
       }
     }
 
-    if (shuntVoltage > 2.94 && !shuntTimeout) {
-
+    if(shuntVoltage > 2.94 && !shuntTimeout) {
       shuntTimeout = true;
     }
-    // Vi er i timeout-tilstand → skriv servo-position
-    if (shuntTimeout && !shuntActionDone) {
-      if (servoState == sweepOpen) {
+    if(shuntTimeout && !shuntActionDone) {
+      if(servoState == sweepOpen) {
         ServoClose();
-      } else if (servoState == sweepClose) {
+      } else if(servoState == sweepClose) {
         ServoOpen();
       }
       lastShuntTime = millis();
@@ -163,7 +162,7 @@ void loop() {
     }
 
     //reset timeout when time runs out
-    if ((millis() - lastShuntTime >= shuntInterval && shuntTimeout) && shuntActionDone) {
+    if((millis() - lastShuntTime >= shuntInterval) && shuntTimeout && shuntActionDone) {
       shuntTimeout = false;
       shuntActionDone = false;
     }
