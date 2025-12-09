@@ -77,7 +77,7 @@ void DrawDisplay() {
   tft.setCursor(0, 30);
   tft.print("Temperature: ");
   tft.print(averagesStruct.temp, 1); //1 decimal place
-  tft.println(" °C");
+  tft.print(" "); tft.write(0xF7); tft.println("C");
 
   tft.setCursor(0, 60);
   tft.print("Humidity: ");
