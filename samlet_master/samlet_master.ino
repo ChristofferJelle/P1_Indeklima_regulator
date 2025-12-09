@@ -68,7 +68,7 @@ struct SensorDataLimitTp {
 };
 struct SensorDataLimitTp upperLimits;
 
-enum RotaryEncoderStateTp { //change to bool?
+enum RotaryEncoderStateTp {
   idleState,
   timeout
 };
