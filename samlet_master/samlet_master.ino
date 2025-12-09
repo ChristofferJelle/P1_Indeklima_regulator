@@ -1,51 +1,79 @@
 //ESP:
+//remember to edit library header files https://jensd.dk/doc/esp32/esp32s3.html
+#include <TFT_eSPI.h> //LILYGO T-Display library
+#include <SPI.h>
+TFT_eSPI tft = TFT_eSPI(); //create TFT object
+
+#define BUTTON_PIN 35
+
+//------------------------------------------------------------------------------
+//wireless communication:
 #include <esp_now.h>
 #include <WiFi.h>
 #include <esp_wifi.h>
 
-//remember to edit library header files https://jensd.dk/doc/esp32/esp32s3.html
-#include <TFT_eSPI.h> // LILYGO T-Display library
-#include <SPI.h>
+struct SensordataTp {
+  float temp;
+  float humid;
+  float co2;
+  uint8_t id[6]; //uint8_t because only the last 2 digits are used
+  char command;
+  int activePeers;
+};
+struct SensordataTp commandStruct, averagesStruct;
 
-//servo
+struct PeerDataTp {
+  esp_now_peer_info_t peerInfo;
+  struct SensordataTp incomingStruct;
+  bool isActive;
+  unsigned long lastSeenTime;
+};
+const int maxPeers = 10;
+struct PeerDataTp peersArr[maxPeers];
+
+unsigned long lastRefresh = 0;
+const unsigned long dataRequestInterval = 4000;
+
+//------------------------------------------------------------------------------
+//servo:
 #include <ESP32Servo.h> //library for servo
-const int servoPin = 17;
+#define SERVO_PIN 17
 
-Servo servo;  //create servo object
+Servo servo; //create servo object
+
 enum ServoStateTp {
   sweepOpen,
   sweepClose,
   idle //triggered by shunt hit
 };
 ServoStateTp servoState = sweepClose;
+
 #define SHUNT_PIN 32
 unsigned long lastShuntTime = 0;
 const unsigned long shuntInterval = 1000;
 bool shuntTimeout = false;
 bool shuntActionDone = false;
 
-TFT_eSPI tft = TFT_eSPI();  // Create TFT object
-#define BUTTON_PIN 35
-
-//Rotary encoder:
+//------------------------------------------------------------------------------
+//rotary encoder:
 #define CLK_PIN 37 //1st click
 #define DT_PIN 38 //2nd click
 #define SW_PIN 39 //button click
-bool interrupt = false;
-//lower limit values need to be temp 15 and humid 30%
+
 struct SensorDataLimitTp {
-  long Temp = 25;
-  long Humid = 60;
-  long CO2 = 800;
-  char CurrentSensorData = 'T';
+  long temp = 25;
+  long humid = 60;
+  long co2 = 800;
+  char currentSensorData = 'T'; //can be 'T', 'H', or 'C'
 };
-struct SensorDataLimitTp s1;
+struct SensorDataLimitTp upperLimits;
 
 enum RotaryEncoderStateTp {
   idleState,
   timeout
 };
 RotaryEncoderStateTp rotaryEncoderState = idleState;
+
 int currentStateCLK;
 int lastStateCLK;
 unsigned long rotaryLastRefresh = 0;
@@ -53,129 +81,88 @@ unsigned long limitDisplayLastRefresh = 0;
 const unsigned long limitDisplayRefreshInterval = 100;
 const unsigned long rotaryRefreshInterval = 1100;
 
-int prevButtonSate;
+int prevButtonState;
 unsigned int ButtonPresses = 0;
-
-//hack
-struct SensordataTp {
-  float temp;
-  float hum;
-  float co2;
-  uint8_t id[6];
-  char command;
-  int activePeersTotal;
-};
-// Create a struct to hold sensor readings
-SensordataTp TempIngoingStruct, CommandStruct, AveragesStruct;
-
-struct PeerDataContextTp {
-  esp_now_peer_info_t peerInfo;
-  struct SensordataTp IngoingStruct;
-  bool isActive; //Flag to track active peers
-  unsigned long lastSeenTime;
-};
-PeerDataContextTp Peers[10];
-unsigned long lastRefresh = 0;
-const unsigned long refreshInterval = 4000;
 
 void setup() {
   Serial.begin(115200);
-  pinMode(BUTTON_PIN, INPUT);
 
-  pinMode(SHUNT_PIN, INPUT);
-  Serial.println();
+  InitESP();
+  InitRotaryEncoder();
+  InitServo();
 
-  InitDisplay();
-
-  InitESP32_NOW();
-
-  //i could also just do Serial.println(WiFi.macAddress()); i guess, but this is cooler
+  //could also just do Serial.println(WiFi.macAddress());, but this is cooler
   Serial.print("[DEFAULT] ESP32 Board MAC Address: ");
-  uint8_t* ownMac = ReadMacAddress();
-  //converts array into a string.
+  uint8_t* ownMac = GetOwnMacAddress();
+  //convert array into a string
   if (ownMac != nullptr) {
     String ownMacHex;
     for (int i = 0; i < 6; i++) {
       String hexPart = String(ownMac[i], HEX);
-      if (hexPart.length() < 2) hexPart = "0" + hexPart;  // zero-pad if needed
+      if (hexPart.length() < 2) hexPart = "0" + hexPart; //zero-pad if needed
       ownMacHex += hexPart;
-      if (i < 5) ownMacHex += ":";  // add ':' except after last byte
+      if (i < 5) {ownMacHex += ":";} //add ':' except after last byte
     }
     Serial.println(ownMacHex);
   }
-
-  //rotary encoder:
-  pinMode(CLK_PIN, INPUT_PULLUP);
-  pinMode(DT_PIN, INPUT_PULLUP);
-  pinMode(SW_PIN, INPUT_PULLUP);
-
-  attachInterrupt(CLK_PIN, InterruptCallback, FALLING);
-
-  prevButtonSate = digitalRead(SW_PIN);
-
-  Serial.println(prevButtonSate);
-  // Read the initial state of CLK
-  lastStateCLK = digitalRead(CLK_PIN);
-  currentStateCLK = digitalRead(CLK_PIN);
-  //servo:
-  servo.attach(servoPin);
-  ServoClose();
 }
 
 void loop() {
   ReadEncoder();
+
   unsigned long timeNow = millis();
-  if (timeNow - rotaryLastRefresh >= rotaryRefreshInterval) {
+  if(timeNow - rotaryLastRefresh >= rotaryRefreshInterval) {
     rotaryEncoderState = idleState;
-  } else if (rotaryEncoderState == timeout && timeNow - limitDisplayLastRefresh >= limitDisplayRefreshInterval) {
+  } else if(rotaryEncoderState == timeout
+            && timeNow - limitDisplayLastRefresh >= limitDisplayRefreshInterval) {
     DrawLimitValues();
     limitDisplayLastRefresh = timeNow;
   }
 
-  if (rotaryEncoderState != timeout) {
+  if(rotaryEncoderState != timeout) {
     int buttonState = digitalRead(BUTTON_PIN);
-    if (buttonState == LOW) {
+    if(!buttonState) {
       Serial.println("Button pressed!");
       SendCommandAllSlaves('R');
       ESP.restart();
     }
 
-    float shuntCurrent = ShuntCurrent();
+    float shuntVoltage = ShuntVoltage();
 
-    if (millis() - lastRefresh >= refreshInterval) {
+    if(millis() - dataRequestInterval > lastRefresh) {
       PruneUnresponsivePeers();
       SendCommandAllSlaves('S');
-      CalculateAverage(&AveragesStruct);
+      CalculateAverage(&averagesStruct);
       DrawDisplay();
       lastRefresh = millis();
     }
 
-    if (!shuntTimeout) {
-      if ((AveragesStruct.temp >= s1.Temp || AveragesStruct.hum >= s1.Humid) || AveragesStruct.co2 >= s1.CO2) {
+    if(!shuntTimeout) {
+      if((averagesStruct.temp >= upperLimits.temp)
+      || (averagesStruct.humid >= upperLimits.humid)
+      || (averagesStruct.co2 >= upperLimits.co2)) {
         ServoOpen();
       } else {
         ServoClose();
       }
     }
 
-    if (shuntCurrent > 2.94 && !shuntTimeout) {
-
+    if(shuntVoltage > 2.94 && !shuntTimeout) {
       shuntTimeout = true;
     }
-    // Vi er i timeout-tilstand → skriv servo-position
-    if (shuntTimeout && !shuntActionDone) {
-      if (servoState == sweepOpen) {
-        servo.write(0);
-      } else if (servoState == sweepClose) {
-        servo.write(180);
+    if(shuntTimeout && !shuntActionDone) {
+      if(servoState == sweepOpen) {
+        ServoClose();
+      } else if(servoState == sweepClose) {
+        ServoOpen();
       }
       lastShuntTime = millis();
       shuntActionDone = true;
       servoState = idle;
     }
 
-    // Reset timeout når tiden er gået
-    if ((millis() - lastShuntTime >= shuntInterval && shuntTimeout) && shuntActionDone) {
+    //reset timeout when time runs out
+    if((millis() - lastShuntTime >= shuntInterval) && shuntTimeout && shuntActionDone) {
       shuntTimeout = false;
       shuntActionDone = false;
     }
