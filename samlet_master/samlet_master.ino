@@ -126,7 +126,7 @@ void setup() {
   pinMode(DT_PIN, INPUT_PULLUP);
   pinMode(SW_PIN, INPUT_PULLUP);
 
-  attachInterrupt(CLK_PIN, InterruptCallback, FALLING);
+  //attachInterrupt(CLK_PIN, InterruptCallback, FALLING);
 
   prevButtonSate = digitalRead(SW_PIN);
   switchPrevButtonSate = digitalRead(switchMenuPin);
