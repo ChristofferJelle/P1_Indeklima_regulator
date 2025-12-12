@@ -145,7 +145,7 @@ void DrawDisplay() {
   Serial.print(AveragesStruct.hum);
   Serial.println(" %");
   Serial.print("Pressure: ");
-  Serial.print(400 + AveragesStruct.co2);
+  Serial.print(AveragesStruct.co2);
   Serial.println(" ppm");
   Serial.println();
 
