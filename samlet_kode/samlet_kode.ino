@@ -22,7 +22,7 @@ float calibValues[3] = { 0.5857142857, 0.9085714286, 0.33 };
 struct CO2Data {
   const int co2Pin = 39;
   float rl = 20000.0;
-  float espResulution = 3.3;
+  float resulution = 4.9;
   float averageVolt;
   float R0 = 20000;
 }; CO2Data MQ135;
