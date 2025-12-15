@@ -28,7 +28,7 @@ float readRS() {
 */
 float calculateRs(int samples = 80) {
   float RL = MQ135.rl;
-  float VC = 4.95;
+  float VC = 5.0;
   float avg = 0.0f;
 
   for (int i = 0; i < samples; i++)

@@ -5,7 +5,7 @@
 
 //remember to edit library header files https://jensd.dk/doc/esp32/esp32s3.html
 #include <TFT_eSPI.h>  // LILYGO T-Display library
-#include <SPI.h>
+//#include <SPI.h> //allerece included under tft espi 
 
 //servo
 #include <ESP32Servo.h>  //library for servo

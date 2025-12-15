@@ -11,9 +11,9 @@ float calibValues[3] = { 0.5857142857, 0.9085714286, 0.33 };
 
 //ESP communication libraries:
 #include <esp_now.h>
-#include <WiFi.h>
+#include <WiFi.h> 
 #include <esp_wifi.h>
-#include <string.h>
+//#include <string.h>
 //make float array with all data in it, maybe #define temp array[3] = temp
 
 
@@ -22,7 +22,7 @@ float calibValues[3] = { 0.5857142857, 0.9085714286, 0.33 };
 struct CO2Data {
   const int co2Pin = 39;
   float rl = 20000.0;
-  float espResulution = 3.33;
+  float espResulution = 3.3;
   float averageVolt;
   float R0 = 20000;
 }; CO2Data MQ135;
