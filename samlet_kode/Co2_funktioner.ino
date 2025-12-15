@@ -1,13 +1,15 @@
 float calculateVolt(int samples = 10) {
   float avg = 0;
 
-  for (int i = 0; i < samples; i++)
+  for (int i = 0; i < samples; i++) {
     avg += analogRead(MQ135.co2Pin);
-
+  }
   avg = avg / samples;
 
   MQ135.averageVolt = MQ135.resulution * (avg / (pow(2.0, bits) - 1.0));
-  return MQ135.averageVolt;
+  float VoltageDivider = (1000.0 + 2000.0) / 2000.0;
+
+  return MQ135.averageVolt * VoltageDivider;
 }
 
 /*
@@ -20,15 +22,15 @@ float readRS() {
 */
 float calculateRs(int samples = 80) {
   float RL = MQ135.rl;
-  float VC = MQ135.resulution;
+  float VC = 4.9f;
   float avg = 0.0f;
-   float avgVolt = calculateVolt(samples);
-   
- 
-        for(int i = 0; i < samples; i++)
-            avg += ((VC*RL)/avgVolt)-RL;
+  float avgVolt = calculateVolt(samples);
 
-        avg = avg / samples;
+
+  for (int i = 0; i < samples; i++) {
+    avg += ((VC * RL) / avgVolt) - RL;
+  }
+  avg = avg / samples;
   return avg;
 }
 float readRSR0() {
