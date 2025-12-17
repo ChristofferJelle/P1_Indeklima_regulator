@@ -18,6 +18,7 @@ enum ServoStateTp {
   idle  //triggered by shunt hit
 };
 ServoStateTp servoState = sweepClose;
+const unsigned long servoActionTime = 3000;
 #define SHUNT_PIN 32
 unsigned long lastShuntTime = 0;
 const unsigned long shuntInterval = 1000;
@@ -138,6 +139,7 @@ void setup() {
   //servo:
   servo.attach(servoPin);
   ServoClose();
+  servoState = idle;
 }
 
 void loop() {
@@ -181,6 +183,10 @@ void loop() {
     }
 
     if (!shuntTimeout) {
+      if(servoState == idle){
+        unsigned long startTime = millis();
+      }
+
       if ((AveragesStruct.temp >= s1.Temp || AveragesStruct.hum >= s1.Humid) || AveragesStruct.co2 >= s1.CO2) {
         ServoOpen();
       } else if (AveragesStruct.temp <= s2.Temp || AveragesStruct.hum <= s2.Humid) {
@@ -188,13 +194,17 @@ void loop() {
       } else {
         ServoClose();
       }
+
+      if(millis() - startTime > servoActionTime) {//if servo is done moving
+        servoState = idle;
+      }
     }
 
     if (shuntCurrent > 2.94 && !shuntTimeout) {
 
       shuntTimeout = true;
     }
-    // Vi er i timeout-tilstand → skriv servo-position
+    // Vi er i timeout-tilstand → release servo
     if (shuntTimeout && !shuntActionDone) {
       if (servoState == sweepOpen) {
         servo.write(0);

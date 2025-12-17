@@ -1,4 +1,4 @@
-void ServoClose() {
+void ServoClose(unsigned long startTime) {
   servo.write(0);
   servoState = sweepClose;
 }
