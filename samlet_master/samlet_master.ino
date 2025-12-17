@@ -188,11 +188,11 @@ void loop() {
       }
 
       if ((AveragesStruct.temp >= s1.Temp || AveragesStruct.hum >= s1.Humid) || AveragesStruct.co2 >= s1.CO2) {
-        ServoOpen();
+        ServoOpen(startTime);
       } else if (AveragesStruct.temp <= s2.Temp || AveragesStruct.hum <= s2.Humid) {
-        ServoClose();
+        ServoClose(startTime);
       } else {
-        ServoClose();
+        ServoClose(startTime);
       }
 
       if(millis() - startTime > servoActionTime) {//if servo is done moving

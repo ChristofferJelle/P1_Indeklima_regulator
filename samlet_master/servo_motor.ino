@@ -1,11 +1,20 @@
 void ServoClose(unsigned long startTime) {
-  servo.write(0);
+  moveServo(startTime, 180, 0); //go from 180 to 0 degrees
   servoState = sweepClose;
 }
 
-void ServoOpen() {
-  servo.write(180);
+void ServoOpen(unsigned long startTime) {
+  moveServo(startTime, 0, 180); //go 0 to 180 degrees
   servoState = sweepOpen;
+}
+
+void moveServo(unsigned long startTime, int startAngle, int stopAngle) {
+  unsigned long progress = millis() - startTime;
+
+  if(progress <= servoActionTime) {
+    long angle = map(progress, 0, servoActionTime, startAngle, stopAngle);
+    servo.write(angle);
+  }
 }
 
 float ShuntCurrent() {
