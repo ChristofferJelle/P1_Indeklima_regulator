@@ -18,6 +18,7 @@ enum ServoStateTp {
   idle  //triggered by shunt hit
 };
 ServoStateTp servoState = sweepClose;
+unsigned long servoStartTime;
 const unsigned long servoActionTime = 3000;
 #define SHUNT_PIN 32
 unsigned long lastShuntTime = 0;
@@ -138,7 +139,8 @@ void setup() {
   currentStateCLK = digitalRead(CLK_PIN);
   //servo:
   servo.attach(servoPin);
-  ServoClose();
+  servoStartTime = millis();
+  ServoClose(servoStartTime);
   servoState = idle;
 }
 
@@ -184,18 +186,18 @@ void loop() {
 
     if (!shuntTimeout) {
       if(servoState == idle){
-        unsigned long startTime = millis();
+        servoStartTime = millis();
       }
 
       if ((AveragesStruct.temp >= s1.Temp || AveragesStruct.hum >= s1.Humid) || AveragesStruct.co2 >= s1.CO2) {
-        ServoOpen(startTime);
+        ServoOpen(servoStartTime);
       } else if (AveragesStruct.temp <= s2.Temp || AveragesStruct.hum <= s2.Humid) {
-        ServoClose(startTime);
+        ServoClose(servoStartTime);
       } else {
-        ServoClose(startTime);
+        ServoClose(servoStartTime);
       }
 
-      if(millis() - startTime > servoActionTime) {//if servo is done moving
+      if(millis() - servoStartTime > servoActionTime) {//if servo is done moving
         servoState = idle;
       }
     }
