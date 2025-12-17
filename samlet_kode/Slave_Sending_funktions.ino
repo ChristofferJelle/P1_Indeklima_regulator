@@ -37,7 +37,7 @@ void OnDataRecv(const uint8_t* mac, const uint8_t* incomingData, int len) {
     case 'S':  //send to master
       outgoingStruct.hum = dhtRead();
       outgoingStruct.temp = NTCRead(true);
-      outgoingStruct.co2 = readPPM(110.47, -2.862, 109.9725932, 100.5413807);
+      outgoingStruct.co2 = readPPM(110.47, -2.862, 98.8334613);
       SendDataToMaster();
       break;
     case 'R':

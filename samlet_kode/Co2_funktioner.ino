@@ -37,10 +37,9 @@ float readRSR0() {
   return (calculateRs(200) / MQ135.R0);
 }
 
-float readPPM(float A, float B, float scale, float offset) {
+float readPPM(float A, float B, float offset) {
   float ratio = readRSR0();
 
   float v = A * pow(ratio, B);
-  //float offset = A*ratio+B-scale*v;
-  return scale * v + offset;  // scale converts curve value to real ppm me thinks
+  return A * v + offset;  // scale converts curve value to real ppm me thinks
 }
