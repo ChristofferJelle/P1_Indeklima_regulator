@@ -24,7 +24,7 @@ struct CO2Data {
   float rl = 1000.0;
   float resulution = 3.33;
   float averageVolt;
-  float R0 = 1000;
+  float R0 = 1000.0;
 }; CO2Data MQ135;
 
 //espnow komunikations data
