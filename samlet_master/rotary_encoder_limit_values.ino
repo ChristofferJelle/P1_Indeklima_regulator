@@ -7,13 +7,13 @@ void UpdateSensorData(bool direction, SensorDataLimitTp& LimitData) {
       break;
     case 'H':
       LimitData.Humid += direction ? -1 : 1;
-      //Serial.print("Humidity: ");
-      //Serial.println(s1.Humid);
+      Serial.print("Humidity: ");
+      Serial.println(s1.Humid);
       break;
     case 'C':
       LimitData.CO2 += direction ? -1 : 1;
-      //Serial.print("CO2: ");
-      //Serial.println(s1.CO2);
+      Serial.print("CO2: ");
+      Serial.println(s1.CO2);
       break;
   }
 }
@@ -40,11 +40,6 @@ void ReadEncoder() {
 
     // If the state is HIGH (meaning the button was just pressed DOWN)
     if (buttonState == HIGH) {
-
-      // GO INTO TIMEOUT STATE so display updates
-      rotaryLastRefresh = millis();
-      rotaryEncoderState = timeout;
-
       switch (screenStateTp) {
         case main:
           // nuffin to press when on main screen
@@ -161,13 +156,4 @@ void DrawLowerLimitValues() {
   tft.setTextSize(1.5);
     tft.setCursor(5, 125);
   tft.print("NOTE: SERVO/SENSOR FUNKTIONS 'PAUSED'");
-}
-
-void InterruptCallback() {
-  /*
-  if (rotaryEncoderState != timeout && millis() - rotaryLastRefresh >= rotaryRefreshInterval) {
-    rotaryLastRefresh = millis();
-    rotaryEncoderState = timeout;
-  }
-  */
 }

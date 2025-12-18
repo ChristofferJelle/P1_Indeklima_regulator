@@ -45,17 +45,10 @@ struct SensorDataLimitTp s1, s2;
 
 int switchButtonPresses;
 
-enum RotaryEncoderStateTp {
-  idleState,
-  timeout
-};
-RotaryEncoderStateTp rotaryEncoderState = idleState;
 int currentStateCLK;
 int lastStateCLK;
-unsigned long rotaryLastRefresh = 0;
 unsigned long limitDisplayLastRefresh = 0;
 const unsigned long limitDisplayRefreshInterval = 100;
-const unsigned long rotaryRefreshInterval = 1100;
 
 enum ScreenStateTp {
   main,
@@ -128,8 +121,6 @@ void setup() {
   pinMode(DT_PIN, INPUT_PULLUP);
   pinMode(SW_PIN, INPUT_PULLUP);
 
-  //attachInterrupt(CLK_PIN, InterruptCallback, FALLING);
-
   prevButtonSate = digitalRead(SW_PIN);
   switchPrevButtonSate = digitalRead(switchMenuPin);
 
@@ -147,9 +138,6 @@ void setup() {
 void loop() {
   ReadEncoder();
   unsigned long timeNow = millis();
-  if (timeNow - rotaryLastRefresh >= rotaryRefreshInterval) {
-    rotaryEncoderState = idleState;
-  }
   if (screenStateTp != main && timeNow - limitDisplayLastRefresh >= limitDisplayRefreshInterval) {
     switch (screenStateTp) {
       case main:
