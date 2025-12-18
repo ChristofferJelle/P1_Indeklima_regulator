@@ -6,7 +6,7 @@ void ServoClose(unsigned long startTime) {
 }
 
 void ServoOpen(unsigned long startTime) {
-  if (servo.read() < 178) {
+  if (servo.read() < 175) {
     moveServo(startTime, 0, 180);  //go 0 to 180 degrees
     servoState = sweepOpen;
   }
