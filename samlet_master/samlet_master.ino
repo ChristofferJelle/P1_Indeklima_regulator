@@ -5,7 +5,7 @@
 
 //remember to edit library header files https://jensd.dk/doc/esp32/esp32s3.html
 #include <TFT_eSPI.h>  // LILYGO T-Display library
-//#include <SPI.h> //allerece included under tft espi 
+//#include <SPI.h> //allerece included under tft espi
 
 //servo
 #include <ESP32Servo.h>  //library for servo
@@ -185,19 +185,18 @@ void loop() {
     }
 
     if (!shuntTimeout) {
-      if(servoState == idle){
+      if (servoState == idle) {
         servoStartTime = millis();
       }
-
-      if ((AveragesStruct.temp >= s1.Temp || AveragesStruct.hum >= s1.Humid) || AveragesStruct.co2 >= s1.CO2) {
-        ServoOpen(servoStartTime);
-      } else if (AveragesStruct.temp <= s2.Temp || AveragesStruct.hum <= s2.Humid) {
+      if (AveragesStruct.temp <= s2.Temp || AveragesStruct.hum <= s2.Humid) {
         ServoClose(servoStartTime);
+      } else if ((AveragesStruct.temp >= s1.Temp || AveragesStruct.hum >= s1.Humid) || AveragesStruct.co2 >= s1.CO2) {
+        ServoOpen(servoStartTime);
       } else {
         ServoClose(servoStartTime);
       }
 
-      if(millis() - servoStartTime > servoActionTime) {//if servo is done moving
+      if (millis() - servoStartTime > servoActionTime) {  //if servo is done moving
         servoState = idle;
       }
     }
@@ -225,4 +224,3 @@ void loop() {
     }
   }
 }
-
