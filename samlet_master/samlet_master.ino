@@ -39,7 +39,7 @@ struct SensorDataLimitTp {
   long Temp = 25;
   long Humid = 60;
   long CO2 = 800;
-  char CurrentSensorData = 'T';
+  char CurrentSensorData = 'T'; //or 'H' or 'C'
 };
 struct SensorDataLimitTp s1, s2;
 
@@ -141,7 +141,7 @@ void loop() {
   if (screenStateTp != main && timeNow - limitDisplayLastRefresh >= limitDisplayRefreshInterval) {
     switch (screenStateTp) {
       case main:
-        //needs to let everything else run ig
+        //let everything else run
         break;
       case upperLimitValue:
         DrawupperLimitValues();
